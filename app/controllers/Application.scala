@@ -14,7 +14,7 @@ object Application extends Controller {
   val FAMILYSEARCH_SERVER_URL: String = Play.current.configuration.getString("familysearch.server.url").get
 
   def index = Action {
-    Ok(views.html.index(""))
+    Ok(views.html.index())
   }
 
   def processToken = Action { implicit request =>
