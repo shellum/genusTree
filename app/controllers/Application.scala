@@ -7,6 +7,9 @@ import play.api.mvc._
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext}
 import ExecutionContext.Implicits.global
+import play.api.data.Forms._
+import play.api.data._
+import play.api.mvc._
 
 object Application extends Controller {
 
@@ -50,13 +53,13 @@ object Application extends Controller {
         ret = response.body
     }
 
-    Await.result(future, Duration(5, java.util.concurrent.TimeUnit.SECONDS))
+    Await.result(future, Duration(25, java.util.concurrent.TimeUnit.SECONDS))
     ret
   }
 
   def getParents() = Action { implicit request =>
-    val token: String = request.getQueryString("token").getOrElse("")
-    val pid: String = request.getQueryString("pid").getOrElse("")
+    val token = userForm.bindFromRequest.get.token
+    val pid = userForm.bindFromRequest.get.pid
     val a:List[String] = reallyGetParents(token, pid)
     val grandparents = a.foldLeft(List[String]())((acc, item)=> reallyGetParents(token, item) ::: acc)
     var auntsUncles = grandparents.foldLeft(List[String]())((acc, item)=>reallyGetChildren(token, item, "id") ::: acc)
@@ -94,4 +97,13 @@ object Application extends Controller {
     ret
   }
 
+  val userForm = Form(
+    mapping(
+      "token" -> text,
+      "pid" -> text
+    )(Cousins.apply)(Cousins.unapply)
+  )
+
 }
+
+case class Cousins(token: String, pid: String)

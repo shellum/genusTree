@@ -13,9 +13,9 @@
             <span class='header-text'>What do you want to do?</span>
         </div>
         <div id='main-panel'>
-            <form action='/getParents' method='GET'>
-                <input type='textbox' name='token' value='@token'/>
-                <input type='textbox' name='pid' value='@personId'/>
+            <form action='/getCousins' method='POST'>
+                <input type='hidden' name='token' value='@token'/>
+                <input type='hidden' name='pid' value='@personId'/>
                 <input type='submit' id='main-panel-button' class="btn btn-success center-block" value='Find Cousins'/>
             </form>
         </div
