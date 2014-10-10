@@ -1,27 +1,18 @@
 @(token: String)
 <!DOCTYPE html>
-
 <html>
-<head>
-    <title>Famit</title>
-    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
-    <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
-    <script src="@routes.Assets.at("javascripts/jquery-1.11.1.min.js")" type="text/javascript"></script>
+    <head>
+        <title>GenusTree</title>
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
+        <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
+        <link rel="stylesheet" href="@routes.Assets.at("stylesheets/bootstrap.min.css")">
+        <script src="@routes.Assets.at("javascripts/jquery-1.11.1.min.js")" type="text/javascript"></script>
     </head>
     <body>
-        Token: @token
-        <form action='https://sandbox.familysearch.org/cis-web/oauth2/v3/authorization' method='POST'>
-            <input type='textbox' name='response_type' value='code'/>
-            <input type='textbox' name='redirect_uri' value='http://localhost:9000/oauth/token'/>
-            <input type='textbox' name='client_id' value='WCQY-7J1Q-GKVV-7DNM-SQ5M-9Q5H-JX3H-CMJK'/>
-            <input type='submit'/>
-    </form>
-<br><br>
-    <form action='/getParents' method='GET'>
+        <form action='/getParents' method='GET'>
             <input type='textbox' name='token' value='@token'/>
             <input type='textbox' name='pid' value='KWWN-99C'/>
             <input type='submit'/>
-            </form>
-
+        </form>
     </body>
-    </html>
+</html>
