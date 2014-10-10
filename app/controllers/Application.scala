@@ -18,29 +18,28 @@ object Application extends Controller {
   }
 
   def processToken = Action { implicit request =>
+
     var ret = "";
     val code: String = request.getQueryString("code").getOrElse("")
     val requestMap = Map("grant_type" -> Seq("authorization_code"),
-    "code" -> Seq(code),
-    "client_id" -> Seq(FAMILYSEARCH_DEVELOPER_ID))
-    val map2 = Map("key" -> Seq("value"),"asdf"->Seq("asdf"))
+      "code" -> Seq(code),
+      "client_id" -> Seq(FAMILYSEARCH_DEVELOPER_ID))
     val future = WS.url(FAMILYSEARCH_SERVER_URL + "/cis-web/oauth2/v3/token")
     .post(requestMap).map { response =>
       ret = response.body
-
     }
+
     Await.result(future,Duration(5, java.util.concurrent.TimeUnit.SECONDS))
     val json = Json.parse(ret)
     var token: String = (json \ "access_token").toString
+    token = "Bearer " + token.replaceAll("\"","")
 
-    token = token.replaceAll("\"","")
-    val user = getCurrentUser("Bearer " + token)
+    val user = getCurrentUser(token)
     val j = Json.parse(user)
     val jsarray = j \ "users"
-    val personId = jsarray(0) \ "personId"
-    val displayName = jsarray(0) \ "displayName"
-    val txt = "hello " + displayName + "(" + personId + ")"
-    Ok(views.html.go(token))
+    val personId = (jsarray(0) \ "personId").toString().replace("\"","")
+    val displayName = (jsarray(0) \ "displayName").toString().replace("\"","")
+    Ok(views.html.menu(token, personId))
   }
 
   def getCurrentUser(token: String) = {
@@ -50,6 +49,7 @@ object Application extends Controller {
       .get().map { response =>
         ret = response.body
     }
+
     Await.result(future, Duration(5, java.util.concurrent.TimeUnit.SECONDS))
     ret
   }
