@@ -2,23 +2,40 @@
     margin: 20px auto auto auto;
     width: 600px;
     height: 50px;
-    background-color: #DDD;
+    background-color: #4f5f2b;
     text-align:right;
+    color: #F0F0F0;
 }
 
 #header-panel {
     margin: 20px auto auto auto;
     width: 600px;
     height: 50px;
-    background-color: #DDD;
+    background-color: #4f5f2b;
     text-align: center;
+    color: #F0F0F0;
+}
+
+#footer-panel {
+    margin: 0px auto auto auto;
+    width: 600px;
+    height: 30px;
+    background-color: #4f5f2b;
+    text-align: center;
+    color: #F0F0F0;
+}
+
+.left-list-item {
+    margin-left: 30px;
+    margin-right: 30px;
+    text-align: left;
 }
 
 #main-panel {
     margin: 0px auto auto auto;
     width: 600px;
     height: 450px;
-    background-color: #DDD;
+    background: -webkit-linear-gradient(left bottom, #FFFDEB 25%, #E7F8EA, #c9e3d9 75%, #FBFCF4);
     text-align:center;
 }
 
