@@ -57,3 +57,23 @@
 #footer-text {
     padding-top: 4px;
 }
+
+.node {
+    cursor: pointer;
+}
+
+.node circle {
+    fill: #fff;
+    stroke: #4f5f2b;
+    stroke-width: 2px;
+}
+
+.node text {
+    font: 10px sans-serif;
+}
+
+.link {
+    fill: none;
+    stroke: #7f8f5b;
+    stroke-width: 2px;
+}

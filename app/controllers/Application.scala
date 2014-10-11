@@ -4,6 +4,7 @@ import play.api.Play
 import play.api.libs.json.{JsObject, Json}
 import play.api.libs.ws.WS
 import play.api.mvc._
+import models.Person
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext}
 import ExecutionContext.Implicits.global
@@ -60,16 +61,55 @@ object Application extends Controller {
   def getParents() = Action { implicit request =>
     val token = userForm.bindFromRequest.get.token
     val pid = userForm.bindFromRequest.get.pid
+    val greatGrandparents = Person("Great Grandparents", "")
+    var childToParentMap = Map[String, String]()
+    var parentToGrandparentMap = Map[String, String]()
     val parents:List[String] = reallyGetParents(token, pid)
     val grandparents = parents.foldLeft(List[String]())((acc, item)=> reallyGetParents(token, item) ::: acc)
-    val funId = (acc: List[String], item: JsObject)=>(item \ "id").toString().replaceAll("\"","") :: acc
-    val funDisplay = (acc: List[String], item: JsObject)=>(item \ "display" \ "name").toString().replaceAll("\"","") :: acc
-    var auntsUncles = grandparents.foldLeft(List[String]())((acc, item)=>reallyGetChildren(token, item, funId) ::: acc)
+    val funId = (acc: List[String], item: JsObject)=>{
+      val id = (item \ "id").toString().replaceAll("\"","")
+      val name = (item \ "display" \ "name").toString().replaceAll("\"","")
+      greatGrandparents.addDecendent(Person(name, id))
+      id :: acc
+    }
+    val funDisplay = (acc: List[String], item: JsObject)=>{
+      val id = (item \ "id").toString().replaceAll("\"","")
+      val name = (item \ "display" \ "name").toString().replaceAll("\"","")
+      name :: acc
+    }
+    var auntsUncles = grandparents.foldLeft(List[String]())((acc, item)=>{
+      val children = reallyGetChildren(token, item, funId)
+      children.foldLeft(Map[String, String]())((acc, child) => {
+        parentToGrandparentMap = parentToGrandparentMap ++ Map(child -> item)
+        Map[String, String]()
+      })
+      children ::: acc
+    })
     auntsUncles = auntsUncles diff parents
-    val cousins = auntsUncles.foldLeft(List[String]())((acc, item)=>reallyGetChildren(token, item, funDisplay) ::: acc)
+    val cousins = auntsUncles.foldLeft(List[String]())((acc, item)=>{
+      val children = reallyGetChildren(token, item, funDisplay)
+      children.foldLeft(Map[String, String]())((acc, child) => {
+        childToParentMap = childToParentMap ++ Map(child -> item)
+        Map[String, String]()
+      })
+      children ::: acc
+    })
     val cousinset = cousins.foldLeft(Set[String]())((acc, item)=>acc + item)
-
-    Ok(views.html.cousins(cousinset))
+    var str = greatGrandparents.getDecendents().foldLeft("")((acc, person)=> {
+      var str3 = childToParentMap.filter(_._2==person.pid).foldLeft("")((acc, kv)=>acc+"{\"name\":\""+kv._1+"\"},")
+ var idx = str3.length-1
+      if (idx<0) idx=0
+  str3 = str3.substring(0,idx)
+      acc + "{\"name\":\""+person.name+"\",\"children\":[" +
+        str3 +
+        "]},"
+    })
+    str = str.substring(0,str.length-1)
+    var s =
+      """{"name":"great grandparents","children":[""" +
+ str +
+        """]}"""
+    Ok(views.html.cousins(cousinset, s))
   }
 
   def reallyGetParents(token: String, pid: String): List[String] = {
