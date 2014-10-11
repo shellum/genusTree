@@ -60,11 +60,13 @@ object Application extends Controller {
   def getParents() = Action { implicit request =>
     val token = userForm.bindFromRequest.get.token
     val pid = userForm.bindFromRequest.get.pid
-    val a:List[String] = reallyGetParents(token, pid)
-    val grandparents = a.foldLeft(List[String]())((acc, item)=> reallyGetParents(token, item) ::: acc)
-    var auntsUncles = grandparents.foldLeft(List[String]())((acc, item)=>reallyGetChildren(token, item, "id") ::: acc)
-    auntsUncles = auntsUncles diff a
-    val cousins = auntsUncles.foldLeft(List[String]())((acc, item)=>reallyGetChildren(token, item, "display") ::: acc)
+    val parents:List[String] = reallyGetParents(token, pid)
+    val grandparents = parents.foldLeft(List[String]())((acc, item)=> reallyGetParents(token, item) ::: acc)
+    val funId = (acc: List[String], item: JsObject)=>(item \ "id").toString().replaceAll("\"","") :: acc
+    val funDisplay = (acc: List[String], item: JsObject)=>(item \ "display" \ "name").toString().replaceAll("\"","") :: acc
+    var auntsUncles = grandparents.foldLeft(List[String]())((acc, item)=>reallyGetChildren(token, item, funId) ::: acc)
+    auntsUncles = auntsUncles diff parents
+    val cousins = auntsUncles.foldLeft(List[String]())((acc, item)=>reallyGetChildren(token, item, funDisplay) ::: acc)
     val cousinset = cousins.foldLeft(Set[String]())((acc, item)=>acc + item)
 
     Ok(views.html.cousins(cousinset))
@@ -83,7 +85,7 @@ object Application extends Controller {
     Await.result(future, Duration(50, java.util.concurrent.TimeUnit.SECONDS))
     ret
   }
-  def reallyGetChildren(token: String, pid: String, field: String): List[String] = {
+  def reallyGetChildren(token: String, pid: String, fun: (List[String],JsObject)=>List[String]): List[String] = {
     var ret:List[String] = List[String]()
     val future = WS.url(FAMILYSEARCH_SERVER_URL + "/platform/tree/persons/"+pid+"/children")
       .withHeaders(("Accept","application/x-fs-v1+json"),("Authorization",token))
@@ -91,7 +93,7 @@ object Application extends Controller {
       val body = response.body
       val json = Json.parse(body)
       val jsarray = json \ "persons"
-      ret = jsarray.as[List[JsObject]].foldLeft(List[String]())((acc, item)=>(item \ field).toString().replaceAll("\"","") :: acc)
+      ret = jsarray.as[List[JsObject]].foldLeft(List[String]())(fun)
     }
     Await.result(future, Duration(50, java.util.concurrent.TimeUnit.SECONDS))
     ret
