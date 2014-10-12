@@ -61,7 +61,7 @@ object Application extends Controller {
   def getParents() = Action { implicit request =>
     val token = userForm.bindFromRequest.get.token
     val pid = userForm.bindFromRequest.get.pid
-    val greatGrandparents = Person("Great Grandparents", "")
+    val grandparentsTree = Person("Grandparents", "")
     var childToParentMap = Map[String, String]()
     var parentToGrandparentMap = Map[String, String]()
     val parents:List[String] = reallyGetParents(token, pid)
@@ -69,7 +69,7 @@ object Application extends Controller {
     val funId = (acc: List[String], item: JsObject)=>{
       val id = (item \ "id").toString().replaceAll("\"","")
       val name = (item \ "display" \ "name").toString().replaceAll("\"","")
-      greatGrandparents.addDecendent(Person(name, id))
+      grandparentsTree.addDecendent(Person(name, id))
       id :: acc
     }
     val funDisplay = (acc: List[String], item: JsObject)=>{
@@ -95,7 +95,7 @@ object Application extends Controller {
       children ::: acc
     })
     val cousinset = cousins.foldLeft(Set[String]())((acc, item)=>acc + item)
-    var str = greatGrandparents.getDecendents().foldLeft("")((acc, person)=> {
+    var str = grandparentsTree.getDecendents().foldLeft("")((acc, person)=> {
       var str3 = childToParentMap.filter(_._2==person.pid).foldLeft("")((acc, kv)=>acc+"{\"name\":\""+kv._1+"\"},")
  var idx = str3.length-1
       if (idx<0) idx=0
@@ -106,10 +106,10 @@ object Application extends Controller {
     })
     str = str.substring(0,str.length-1)
     var s =
-      """{"name":"great grandparents","children":[""" +
+      """{"name":"All Grandparents","children":[""" +
  str +
         """]}"""
-    Ok(views.html.cousins(cousinset, s))
+    Ok(views.html.cousins(cousinset, cousinset.size, s))
   }
 
   def reallyGetParents(token: String, pid: String): List[String] = {

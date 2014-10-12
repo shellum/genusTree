@@ -8,14 +8,12 @@
         <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
         <link rel="stylesheet" media="all and (max-width: 500px)" href="@routes.Assets.at("stylesheets/main-small.css")">
         <script src="@routes.Assets.at("javascripts/jquery-1.11.1.min.js")" type="text/javascript"></script>
-        <script src="http://d3js.org/d3.v3.min.js"></script>
     </head>
     <script>
         $(function() {
             $('#sign-in-button').click(function() {
                 $('#sign-in-form').submit();
                 });
-            d3.select("#main-panel").append("p").text("New paragraph!");
         });
     </script>
     <body>
