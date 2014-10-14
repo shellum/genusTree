@@ -8,6 +8,11 @@
     border: 1px solid #cccccc;
 }
 
+#footer-text-message {
+    position: absolute;
+    left: 10px;
+}
+
 .subtitle {
     color: #4f5f2b;
 }
