@@ -11,6 +11,7 @@ import ExecutionContext.Implicits.global
 import play.api.data.Forms._
 import play.api.data._
 import play.api.mvc._
+import models.Person
 
 object Application extends Controller {
 
@@ -19,6 +20,10 @@ object Application extends Controller {
 
   def index = Action {
     Ok(views.html.index())
+  }
+
+  def privacyPolicy = Action {
+    Ok(views.html.privacy())
   }
 
   def processToken = Action { implicit request =>
@@ -61,79 +66,96 @@ object Application extends Controller {
   def getParents() = Action { implicit request =>
     val token = userForm.bindFromRequest.get.token
     val pid = userForm.bindFromRequest.get.pid
-    val grandparentsTree = Person("Grandparents", "")
-    var childToParentMap = Map[String, String]()
-    var parentToGrandparentMap = Map[String, String]()
-    val parents:List[String] = reallyGetParents(token, pid)
-    val grandparents = parents.foldLeft(List[String]())((acc, item)=> reallyGetParents(token, item) ::: acc)
-    val funId = (acc: List[String], item: JsObject)=>{
-      val id = (item \ "id").toString().replaceAll("\"","")
-      val name = (item \ "display" \ "name").toString().replaceAll("\"","")
-      grandparentsTree.addDecendent(Person(name, id))
-      id :: acc
-    }
-    val funDisplay = (acc: List[String], item: JsObject)=>{
-      val id = (item \ "id").toString().replaceAll("\"","")
-      val name = (item \ "display" \ "name").toString().replaceAll("\"","")
-      name :: acc
-    }
-    var auntsUncles = grandparents.foldLeft(List[String]())((acc, item)=>{
-      val children = reallyGetChildren(token, item, funId)
-      children.foldLeft(Map[String, String]())((acc, child) => {
-        parentToGrandparentMap = parentToGrandparentMap ++ Map(child -> item)
-        Map[String, String]()
-      })
+
+    var addedCousins: Map[String, Person] = Map[String, Person]()
+    val grandparentSet = Person("Grandparent Set", "", "",null, false)
+
+    //Walk up the tree
+    val parents:List[Person] = reallyGetParents(token, Person("doesn't matter",pid, "",null, false))
+    val grandparents = parents.foldLeft(List[Person]())((acc, item)=> reallyGetParents(token, item) ::: acc)
+
+    //Walk back down the tree
+//TODO: FOREACH THIS, remove acc
+    val auntsUncles = grandparents.foldLeft(List[Person]())((acc, item)=>{
+      val children = reallyGetChildren(token, pid, item)
+      grandparentSet.addDecendents(children)
       children ::: acc
     })
-    auntsUncles = auntsUncles diff parents
-    val cousins = auntsUncles.foldLeft(List[String]())((acc, item)=>{
-      val children = reallyGetChildren(token, item, funDisplay)
-      children.foldLeft(Map[String, String]())((acc, child) => {
-        childToParentMap = childToParentMap ++ Map(child -> item)
-        Map[String, String]()
+
+    //auntsUncles = auntsUncles diff parents
+    val cousins = grandparentSet.getDecendents().foldLeft(List[Person]())((acc, item)=>{
+      var children = reallyGetChildren(token, pid, item)
+      var toRemove = List[Person]()
+      children.foreach((child)=> {
+        val addedCousin = addedCousins.get(child.pid).getOrElse(Person("","","",null,false))
+        if (addedCousin.getPid == "") {
+          System.out.println("Added unique "+child.name+", parent:"+child.parent.name+child.parent.altName)
+          addedCousins += (child.getPid() -> child)
+        }
+        else {
+          System.out.println("BAlready added "+child.name+", origparent:"+child.parent.name++child.parent.altName+", parent:"+addedCousin.parent.name+addedCousin.parent.altName)
+          addedCousin.parent.altName =  " & " + item.name
+          System.out.println("AAlready added "+child.name+", parent:"+addedCousin.parent.name+addedCousin.parent.altName)
+          toRemove = child :: toRemove
+        }
+
       })
+      toRemove.foreach((person) => children = children diff List(person))
+      item.addDecendents(children)
       children ::: acc
     })
-    val cousinset = cousins.foldLeft(Set[String]())((acc, item)=>acc + item)
-    var str = grandparentsTree.getDecendents().foldLeft("")((acc, person)=> {
-      var str3 = childToParentMap.filter(_._2==person.pid).foldLeft("")((acc, kv)=>acc+"{\"name\":\""+kv._1+"\"},")
- var idx = str3.length-1
-      if (idx<0) idx=0
-  str3 = str3.substring(0,idx)
-      acc + "{\"name\":\""+person.name+"\",\"children\":[" +
-        str3 +
-        "]},"
+
+    var cousinList = cousins.foldLeft(List[Person]())((acc, item)=>{
+      if (item.pid != pid)
+        item :: acc
+      else
+        acc
     })
-    str = str.substring(0,str.length-1)
-    var s =
-      """{"name":"All Grandparents","children":[""" +
- str +
-        """]}"""
-    Ok(views.html.cousins(cousinset, cousinset.size, s))
+
+    cousinList = cousinList.sortBy(_.getName())
+
+    val gps = Person("All Grandparents","","",null,false)
+    gps.addDecendents(grandparentSet.getDecendents())
+    val json = gps.toJson
+
+    Ok(views.html.cousins(cousinList, cousinList.size, json.toString()))
   }
 
-  def reallyGetParents(token: String, pid: String): List[String] = {
-    var ret:List[String] = List[String]()
-    val future = WS.url(FAMILYSEARCH_SERVER_URL + "/platform/tree/persons/"+pid+"/parents")
+  def reallyGetParents(token: String, person: Person): List[Person] = {
+    var ret:List[Person] = List[Person]()
+    val future = WS.url(FAMILYSEARCH_SERVER_URL + "/platform/tree/persons/"+person.getPid()+"/parents")
       .withHeaders(("Accept","application/x-fs-v1+json"),("Authorization",token))
       .get().map { response =>
       val body = response.body
       val json = Json.parse(body)
       val jsarray = json \ "persons"
-      ret = jsarray.as[List[JsObject]].foldLeft(List[String]())((acc, item)=>(item \ "id").toString().replaceAll("\"","") :: acc)
+      ret = jsarray.as[List[JsObject]].foldLeft(List[Person]())((acc, item)=>{
+        val id = (item \ "id").toString().replaceAll("\"","")
+        val name = (item \ "display" \ "name").toString().replaceAll("\"","")
+        val gender = (item \ "gender" \ "type").toString().replaceAll("\"","").replace("http://gedcomx.org/","")
+        Person(name, id, gender, null, false) :: acc
+      })
     }
     Await.result(future, Duration(50, java.util.concurrent.TimeUnit.SECONDS))
     ret
   }
-  def reallyGetChildren(token: String, pid: String, fun: (List[String],JsObject)=>List[String]): List[String] = {
-    var ret:List[String] = List[String]()
-    val future = WS.url(FAMILYSEARCH_SERVER_URL + "/platform/tree/persons/"+pid+"/children")
+  def reallyGetChildren(token: String, selfPid: String, parent: Person): List[Person] = {
+    var ret:List[Person] = List[Person]()
+    val future = WS.url(FAMILYSEARCH_SERVER_URL + "/platform/tree/persons/"+parent.getPid+"/children")
       .withHeaders(("Accept","application/x-fs-v1+json"),("Authorization",token))
       .get().map { response =>
       val body = response.body
       val json = Json.parse(body)
       val jsarray = json \ "persons"
-      ret = jsarray.as[List[JsObject]].foldLeft(List[String]())(fun)
+      ret = jsarray.as[List[JsObject]].foldLeft(List[Person]())((acc: List[Person], item: JsObject)=>{
+        val id = (item \ "id").toString().replaceAll("\"","")
+        val name = (item \ "display" \ "name").toString().replaceAll("\"","")
+        val gender = (item \ "gender" \ "type").toString().replaceAll("\"","").replace("http://gedcomx.org/","")
+        var highlight = false
+        if (id.equals(selfPid))
+          highlight = true
+        Person(name,id, gender, parent, highlight) :: acc
+      })
     }
     Await.result(future, Duration(50, java.util.concurrent.TimeUnit.SECONDS))
     ret

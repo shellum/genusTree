@@ -8,6 +8,10 @@
     border: 1px solid #cccccc;
 }
 
+.subtitle {
+    color: #4f5f2b;
+}
+
 #footer-panel {
     margin: 0px auto auto auto;
     width: 600px;
@@ -16,7 +20,16 @@
     color: #4f5f2b;
     position: relative;
     border: 1px solid #cccccc;
-    text-align: center;
+}
+
+#privacy-policy-link {
+    position: absolute;
+    left: 10px;
+}
+
+#logout-link {
+    position: absolute;
+    right: 10px;
 }
 
 .left-list-item {
@@ -76,4 +89,11 @@
     fill: none;
     stroke: #7f8f5b;
     stroke-width: 2px;
+}
+
+#header-logo {
+    width: 50px;
+    height: 50px;
+    position: absolute;
+    right: 0;
 }
