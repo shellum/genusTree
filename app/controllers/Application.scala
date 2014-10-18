@@ -63,7 +63,7 @@ object Application extends Controller {
     ret
   }
 
-  def getParents() = Action { implicit request =>
+  def getCousins() = Action { implicit request =>
     val token = userForm.bindFromRequest.get.token
     val pid = userForm.bindFromRequest.get.pid
 
@@ -71,31 +71,26 @@ object Application extends Controller {
     val grandparentSet = Person("Grandparent Set", "", "",null, false)
 
     //Walk up the tree
-    val parents:List[Person] = reallyGetParents(token, Person("doesn't matter",pid, "",null, false))
-    val grandparents = parents.foldLeft(List[Person]())((acc, item)=> reallyGetParents(token, item) ::: acc)
+    val parents:List[Person] = getParents(token, Person("doesn't matter",pid, "",null, false))
+    val grandparents = parents.foldLeft(List[Person]())((acc, item)=> getParents(token, item) ::: acc)
 
     //Walk back down the tree
-//TODO: FOREACH THIS, remove acc
-    val auntsUncles = grandparents.foldLeft(List[Person]())((acc, item)=>{
-      val children = reallyGetChildren(token, pid, item)
+    grandparents.foreach((item)=>{
+      val children = getChildren(token, pid, item)
       grandparentSet.addDecendents(children)
-      children ::: acc
     })
 
     //auntsUncles = auntsUncles diff parents
     val cousins = grandparentSet.getDecendents().foldLeft(List[Person]())((acc, item)=>{
-      var children = reallyGetChildren(token, pid, item)
+      var children = getChildren(token, pid, item)
       var toRemove = List[Person]()
       children.foreach((child)=> {
         val addedCousin = addedCousins.get(child.pid).getOrElse(Person("","","",null,false))
         if (addedCousin.getPid == "") {
-          System.out.println("Added unique "+child.name+", parent:"+child.parent.name+child.parent.altName)
           addedCousins += (child.getPid() -> child)
         }
         else {
-          System.out.println("BAlready added "+child.name+", origparent:"+child.parent.name++child.parent.altName+", parent:"+addedCousin.parent.name+addedCousin.parent.altName)
           addedCousin.parent.altName =  " & " + item.name
-          System.out.println("AAlready added "+child.name+", parent:"+addedCousin.parent.name+addedCousin.parent.altName)
           toRemove = child :: toRemove
         }
 
@@ -121,7 +116,7 @@ object Application extends Controller {
     Ok(views.html.cousins(cousinList, cousinList.size, json.toString()))
   }
 
-  def reallyGetParents(token: String, person: Person): List[Person] = {
+  def getParents(token: String, person: Person): List[Person] = {
     var ret:List[Person] = List[Person]()
     val future = WS.url(FAMILYSEARCH_SERVER_URL + "/platform/tree/persons/"+person.getPid()+"/parents")
       .withHeaders(("Accept","application/x-fs-v1+json"),("Authorization",token))
@@ -139,7 +134,7 @@ object Application extends Controller {
     Await.result(future, Duration(50, java.util.concurrent.TimeUnit.SECONDS))
     ret
   }
-  def reallyGetChildren(token: String, selfPid: String, parent: Person): List[Person] = {
+  def getChildren(token: String, selfPid: String, parent: Person): List[Person] = {
     var ret:List[Person] = List[Person]()
     val future = WS.url(FAMILYSEARCH_SERVER_URL + "/platform/tree/persons/"+parent.getPid+"/children")
       .withHeaders(("Accept","application/x-fs-v1+json"),("Authorization",token))

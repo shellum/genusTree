@@ -1,5 +1,5 @@
 GET     /                           controllers.Application.index
 GET     /oauth/token                controllers.Application.processToken
-POST    /getCousins                 controllers.Application.getParents
+POST    /getCousins                 controllers.Application.getCousins
 GET     /privacyPolicy              controllers.Application.privacyPolicy
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
