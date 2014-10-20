@@ -12,16 +12,16 @@ case class Person(name: String, pid: String, gender: String, parent: Option[Pers
 
   def getPid() = pid
 
-  def getDecendents() = children
+  def getDescendants() = children
 
-  def addDecendent(person: Person) = {
+  def addDescendant(person: Person) = {
     if (!children.contains(person))
       children = person :: children
   }
 
-  def addDecendents(people: List[Person]) = {
+  def addDescendants(people: List[Person]) = {
     people.foreach((person) => {
-      addDecendent(person)
+      addDescendant(person)
     })
   }
 

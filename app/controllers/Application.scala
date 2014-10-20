@@ -1,5 +1,7 @@
 package controllers
 
+import java.util.concurrent.TimeUnit
+
 import models.Person
 import play.api.Play
 import play.api.data.Forms._
@@ -10,7 +12,7 @@ import play.api.mvc._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent._
 
 object Application extends Controller {
 
@@ -74,13 +76,20 @@ object Application extends Controller {
     val grandparents = parents.foldLeft(List[Person]())((acc, item) => getParents(token, item) ::: acc)
 
     //Walk back down the tree
+
+    //Get Aunts and Uncles
+    var auntUncleFutures = List[Future[List[Person]]]()
     grandparents.foreach((item) => {
-      val children = getChildren(token, pid, item)
-      grandparentSet.addDecendents(children)
+      auntUncleFutures = future { getChildren(token, pid, item) } :: auntUncleFutures
     })
 
+    val f = Future.sequence(auntUncleFutures).map {
+      lst => lst.foreach(l=>grandparentSet.addDescendants(l))
+    }
+    Await.result(f, Duration(5,TimeUnit.SECONDS))
+
     //auntsUncles = auntsUncles diff parents
-    val cousins = grandparentSet.getDecendents().foldLeft(List[Person]())((acc, item) => {
+    val cousins = grandparentSet.getDescendants().foldLeft(List[Person]())((acc, item) => {
       var children = getChildren(token, pid, item)
       var toRemove = List[Person]()
       children.foreach((child) => {
@@ -95,7 +104,7 @@ object Application extends Controller {
 
       })
       toRemove.foreach((person) => children = children diff List(person))
-      item.addDecendents(children)
+      item.addDescendants(children)
       children ::: acc
     })
 
@@ -109,7 +118,12 @@ object Application extends Controller {
     cousinList = cousinList.sortBy(_.getName())
 
     val gps = Person("All Grandparents", "", "", None)
-    gps.addDecendents(grandparentSet.getDecendents())
+    // Only save aunts/uncles that have descendants
+    grandparentSet.getDescendants().filter(p=> {
+      p.children.size > 0
+    }).foreach(p=>{
+      gps.addDescendant(p)
+    })
     val json = gps.toJson
 
     Ok(views.html.cousins(cousinList, cousinList.size, json.toString()))
