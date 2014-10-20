@@ -15,6 +15,9 @@
             <span class='header-text'>Cousins</span><img id='header-logo' src="@routes.Assets.at("images/tree.gif")"/>
         </div>
         <div id='main-panel'>
+            @if(numCousins == 0) {
+                No cousins were found.
+            }
             <ul id='cousin-list' class="list-group">
                 @for((c) <- cousinset) {
                     <li class="list-group-item left-list-item">@c.name</li>
@@ -28,7 +31,7 @@
 
             var margin = {top: 20, right: 120, bottom: 20, left: 120},
                     width = 600 - margin.right - margin.left,
-                    height = (@numCousins * 50) - margin.top - margin.bottom;
+                    height = (@numCousins * 50)+50 - margin.top - margin.bottom;
 
             var i = 0,
                     duration = 750,
