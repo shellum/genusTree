@@ -140,7 +140,7 @@ object Application extends Controller {
     })
     val json = gps.toJson
 
-    Ok(views.html.cousins(cousinList, cousinList.size, json.toString()))
+    Ok(views.html.cousins(cousinList.sorted, cousinList.size, json.toString()))
   }
 
   def getAuntUncleMatch(cousin: Person, auntUncleList: List[Person]): Person = {

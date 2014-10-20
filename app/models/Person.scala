@@ -1,6 +1,6 @@
 package models
 
-case class Person(name: String, pid: String, gender: String, parent: Option[Person], highlight: Boolean = false) {
+case class Person(name: String, pid: String, gender: String, parent: Option[Person], highlight: Boolean = false) extends Ordered[Person] {
   var children: List[Person] = List[Person]()
   var altName = ""
 
@@ -32,5 +32,9 @@ case class Person(name: String, pid: String, gender: String, parent: Option[Pers
     ret += "]}"
     ret
   }
+
+  import scala.math.Ordered.orderingToOrdered
+
+  def compare(that: Person): Int = (this.name) compare (that.name)
 
 }
