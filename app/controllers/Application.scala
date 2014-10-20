@@ -86,29 +86,43 @@ object Application extends Controller {
     val f = Future.sequence(auntUncleFutures).map {
       lst => lst.foreach(l=>grandparentSet.addDescendants(l))
     }
-    Await.result(f, Duration(5,TimeUnit.SECONDS))
+    Await.result(f, Duration(50,TimeUnit.SECONDS))
 
-    //auntsUncles = auntsUncles diff parents
-    val cousins = grandparentSet.getDescendants().foldLeft(List[Person]())((acc, item) => {
-      var children = getChildren(token, pid, item)
-      var toRemove = List[Person]()
-      children.foreach((child) => {
-        val addedCousin = addedCousins.get(child.pid).getOrElse(Person("", "", "", None))
-        if (addedCousin.getPid == "") {
-          addedCousins += (child.getPid() -> child)
-        }
-        else {
-          addedCousin.parent.get.altName = " & " + item.name
-          toRemove = child :: toRemove
-        }
-
-      })
-      toRemove.foreach((person) => children = children diff List(person))
-      item.addDescendants(children)
-      children ::: acc
+    // Get cousins
+    var cousinFutures = List[Future[List[Person]]]()
+    grandparentSet.getDescendants().foreach((item)=> {
+      cousinFutures = future { getChildren(token, pid, item) } :: cousinFutures
     })
 
-    var cousinList = cousins.foldLeft(List[Person]())((acc, item) => {
+    var allCousins = List[Person]()
+    val fz = Future.sequence(cousinFutures).map {
+      auntUncleChildren: List[List[Person]] => {
+        auntUncleChildren.foreach((singleAuntUncleChildren:List[Person])=> {
+          var cousinsToAdd = singleAuntUncleChildren
+          var toRemove = List[Person]()
+          singleAuntUncleChildren.foreach((cousin) => {
+            val addedCousin = addedCousins.get(cousin.pid).getOrElse(Person("", "", "", None))
+            if (addedCousin.getPid == "") {
+             addedCousins += (cousin.getPid() -> cousin)
+            }
+            else {
+              addedCousin.parent.get.altName = " & " + cousin.parent.get.name
+              toRemove = cousin :: toRemove
+            }
+
+          })
+          toRemove.foreach((person) => cousinsToAdd = cousinsToAdd diff List(person))
+          if (cousinsToAdd.size > 0) {
+            getAuntUncleMatch(cousinsToAdd.head,grandparentSet.getDescendants()).addDescendants(cousinsToAdd)
+          }
+          allCousins = allCousins ::: cousinsToAdd
+        })
+      }
+    }
+
+    Await.result(fz, Duration(50,TimeUnit.SECONDS))
+
+    var cousinList = allCousins.foldLeft(List[Person]())((acc, item) => {
       if (item.pid != pid)
         item :: acc
       else
@@ -127,6 +141,15 @@ object Application extends Controller {
     val json = gps.toJson
 
     Ok(views.html.cousins(cousinList, cousinList.size, json.toString()))
+  }
+
+  def getAuntUncleMatch(cousin: Person, auntUncleList: List[Person]): Person = {
+    var matchedAuntUncle: Person = null
+    auntUncleList.foreach(auntUncle => {
+      if (auntUncle.pid == cousin.parent.get.pid)
+        matchedAuntUncle = auntUncle
+    })
+    matchedAuntUncle
   }
 
   def getParents(token: String, person: Person): List[Person] = {
