@@ -11,8 +11,8 @@ import play.api.libs.ws.WS
 import play.api.mvc._
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.Duration
 import scala.concurrent._
+import scala.concurrent.duration.Duration
 
 object Application extends Controller {
 
@@ -25,6 +25,15 @@ object Application extends Controller {
 
   def privacyPolicy = Action {
     Ok(views.html.privacy())
+  }
+
+  def search = Action {
+    implicit request => {
+      val token = userForm.bindFromRequest.get.token
+      val pid = userForm.bindFromRequest.get.pid
+
+      Ok(views.html.search(token, pid))
+    }
   }
 
   def processToken = Action { implicit request =>
@@ -80,30 +89,34 @@ object Application extends Controller {
     //Get Aunts and Uncles
     var auntUncleFutures = List[Future[List[Person]]]()
     grandparents.foreach((item) => {
-      auntUncleFutures = future { getChildren(token, pid, item) } :: auntUncleFutures
+      auntUncleFutures = future {
+        getChildren(token, pid, item)
+      } :: auntUncleFutures
     })
 
     val f = Future.sequence(auntUncleFutures).map {
-      lst => lst.foreach(l=>grandparentSet.addDescendants(l))
+      lst => lst.foreach(l => grandparentSet.addDescendants(l))
     }
-    Await.result(f, Duration(50,TimeUnit.SECONDS))
+    Await.result(f, Duration(50, TimeUnit.SECONDS))
 
     // Get cousins
     var cousinFutures = List[Future[List[Person]]]()
-    grandparentSet.getDescendants().foreach((item)=> {
-      cousinFutures = future { getChildren(token, pid, item) } :: cousinFutures
+    grandparentSet.getDescendants().foreach((item) => {
+      cousinFutures = future {
+        getChildren(token, pid, item)
+      } :: cousinFutures
     })
 
     var allCousins = List[Person]()
     val fz = Future.sequence(cousinFutures).map {
       auntUncleChildren: List[List[Person]] => {
-        auntUncleChildren.foreach((singleAuntUncleChildren:List[Person])=> {
+        auntUncleChildren.foreach((singleAuntUncleChildren: List[Person]) => {
           var cousinsToAdd = singleAuntUncleChildren
           var toRemove = List[Person]()
           singleAuntUncleChildren.foreach((cousin) => {
             val addedCousin = addedCousins.get(cousin.pid).getOrElse(Person("", "", "", None))
             if (addedCousin.getPid == "") {
-             addedCousins += (cousin.getPid() -> cousin)
+              addedCousins += (cousin.getPid() -> cousin)
             }
             else {
               addedCousin.parent.get.altName = " & " + cousin.parent.get.name
@@ -113,14 +126,14 @@ object Application extends Controller {
           })
           toRemove.foreach((person) => cousinsToAdd = cousinsToAdd diff List(person))
           if (cousinsToAdd.size > 0) {
-            getAuntUncleMatch(cousinsToAdd.head,grandparentSet.getDescendants()).addDescendants(cousinsToAdd)
+            getAuntUncleMatch(cousinsToAdd.head, grandparentSet.getDescendants()).addDescendants(cousinsToAdd)
           }
           allCousins = allCousins ::: cousinsToAdd
         })
       }
     }
 
-    Await.result(fz, Duration(50,TimeUnit.SECONDS))
+    Await.result(fz, Duration(50, TimeUnit.SECONDS))
 
     var cousinList = allCousins.foldLeft(List[Person]())((acc, item) => {
       if (item.pid != pid)
@@ -133,9 +146,9 @@ object Application extends Controller {
 
     val gps = Person("All Grandparents", "", "", None)
     // Only save aunts/uncles that have descendants
-    grandparentSet.getDescendants().filter(p=> {
+    grandparentSet.getDescendants().filter(p => {
       p.children.size > 0
-    }).foreach(p=>{
+    }).foreach(p => {
       gps.addDescendant(p)
     })
     val json = gps.toJson
@@ -158,14 +171,18 @@ object Application extends Controller {
       .withHeaders(("Accept", "application/x-fs-v1+json"), ("Authorization", token))
       .get().map { response =>
       val body = response.body
-      val json = Json.parse(body)
-      val jsarray = json \ "persons"
-      ret = jsarray.as[List[JsObject]].foldLeft(List[Person]())((acc, item) => {
-        val id = (item \ "id").toString().replaceAll("\"", "")
-        val name = (item \ "display" \ "name").toString().replaceAll("\"", "")
-        val gender = (item \ "gender" \ "type").toString().replaceAll("\"", "").replace("http://gedcomx.org/", "")
-        Person(name, id, gender, None) :: acc
-      })
+      body match {
+        case "" =>
+        case _ =>
+          val json = Json.parse(body)
+          val jsarray = json \ "persons"
+          ret = jsarray.as[List[JsObject]].foldLeft(List[Person]())((acc, item) => {
+            val id = (item \ "id").toString().replaceAll("\"", "")
+            val name = (item \ "display" \ "name").toString().replaceAll("\"", "")
+            val gender = (item \ "gender" \ "type").toString().replaceAll("\"", "").replace("http://gedcomx.org/", "")
+            Person(name, id, gender, None) :: acc
+          })
+      }
     }
     Await.result(future, Duration(50, java.util.concurrent.TimeUnit.SECONDS))
     ret
