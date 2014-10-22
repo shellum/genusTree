@@ -73,10 +73,7 @@ object Application extends Controller {
     ret
   }
 
-  def getCousins() = Action { implicit request =>
-    val token = userForm.bindFromRequest.get.token
-    val pid = userForm.bindFromRequest.get.pid
-
+  def getCousinTree(token: String, pid: String): (Person, List[Person]) = {
     var addedCousins: Map[String, Person] = Map[String, Person]()
     val grandparentSet = Person("Grandparent Set", "", "", None, false)
 
@@ -94,10 +91,10 @@ object Application extends Controller {
       } :: auntUncleFutures
     })
 
-    val f = Future.sequence(auntUncleFutures).map {
+    val allAuntUncleFutures = Future.sequence(auntUncleFutures).map {
       lst => lst.foreach(l => grandparentSet.addDescendants(l))
     }
-    Await.result(f, Duration(50, TimeUnit.SECONDS))
+    Await.result(allAuntUncleFutures, Duration(50, TimeUnit.SECONDS))
 
     // Get cousins
     var cousinFutures = List[Future[List[Person]]]()
@@ -108,7 +105,7 @@ object Application extends Controller {
     })
 
     var allCousins = List[Person]()
-    val fz = Future.sequence(cousinFutures).map {
+    val allCousinFutures = Future.sequence(cousinFutures).map {
       auntUncleChildren: List[List[Person]] => {
         auntUncleChildren.foreach((singleAuntUncleChildren: List[Person]) => {
           var cousinsToAdd = singleAuntUncleChildren
@@ -120,9 +117,9 @@ object Application extends Controller {
             }
             else {
               addedCousin.parent.get.altName = " & " + cousin.parent.get.name
+              grandparentSet.removeDescendant(cousin.parent.get)
               toRemove = cousin :: toRemove
             }
-
           })
           toRemove.foreach((person) => cousinsToAdd = cousinsToAdd diff List(person))
           if (cousinsToAdd.size > 0) {
@@ -133,14 +130,50 @@ object Application extends Controller {
       }
     }
 
-    Await.result(fz, Duration(50, TimeUnit.SECONDS))
+    Await.result(allCousinFutures, Duration(50, TimeUnit.SECONDS))
 
-    var cousinList = allCousins.foldLeft(List[Person]())((acc, item) => {
+    val cousinList = allCousins.foldLeft(List[Person]())((acc, item) => {
       if (item.pid != pid)
         item :: acc
       else
         acc
     })
+
+    (grandparentSet, cousinList)
+  }
+
+  def getAuntsUncles() = Action { implicit request =>
+    val token = userForm.bindFromRequest.get.token
+    val pid = userForm.bindFromRequest.get.pid
+
+    val treeTuple = getCousinTree(token, pid)
+    val grandparentSet = treeTuple._1
+
+    val auntUncleList = grandparentSet.getDescendants().sortBy(_.getName())
+
+    // Remove descendants of Aunts/Uncles unless they are the user in question
+    grandparentSet.getDescendants().foreach(p => {
+      var containsSelf = false
+      p.getDescendants().foreach(d => {
+        if (d.pid == pid)
+          containsSelf = true
+      })
+      if (!containsSelf)
+        p.clearDescendants()
+    })
+    val json = grandparentSet.toJson
+
+    Ok(views.html.cousins("Aunts & Uncles",auntUncleList.sorted, auntUncleList.size, json.toString()))
+  }
+
+
+  def getCousins() = Action { implicit request =>
+    val token = userForm.bindFromRequest.get.token
+    val pid = userForm.bindFromRequest.get.pid
+
+    val treeTuple = getCousinTree(token, pid)
+    val grandparentSet = treeTuple._1
+    var cousinList = treeTuple._2
 
     cousinList = cousinList.sortBy(_.getName())
 
@@ -153,7 +186,7 @@ object Application extends Controller {
     })
     val json = gps.toJson
 
-    Ok(views.html.cousins(cousinList.sorted, cousinList.size, json.toString()))
+    Ok(views.html.cousins("Cousins",cousinList.sorted, cousinList.size, json.toString()))
   }
 
   def getAuntUncleMatch(cousin: Person, auntUncleList: List[Person]): Person = {

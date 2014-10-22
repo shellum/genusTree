@@ -10,6 +10,8 @@ case class Person(name: String, pid: String, gender: String, parent: Option[Pers
 
   def getName() = name
 
+  def getAltName() = altName
+
   def getPid() = pid
 
   def getDescendants() = children
@@ -19,10 +21,20 @@ case class Person(name: String, pid: String, gender: String, parent: Option[Pers
       children = person :: children
   }
 
+  def removeDescendant(person: Person) = {
+    children = children.filter(p=>{
+      p!=person
+    })
+  }
+
   def addDescendants(people: List[Person]) = {
     people.foreach((person) => {
       addDescendant(person)
     })
+  }
+
+  def clearDescendants() = {
+    children = List[Person]()
   }
 
   def toJson: String = {

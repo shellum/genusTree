@@ -27,6 +27,12 @@
     border: 1px solid #cccccc;
 }
 
+.form-element {
+    width: 50%;
+    text-align: left;
+    margin: 10px;
+}
+
 #privacy-policy-link {
     position: absolute;
     left: 10px;
@@ -74,6 +80,7 @@
 
 #footer-text {
     padding-top: 4px;
+    margin-left: 10px;
 }
 
 .node {

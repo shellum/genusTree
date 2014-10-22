@@ -13,6 +13,7 @@
                $('#get-cousins-button').click(function() {
                    $('.progress').show();
                    $('#get-cousins-button').attr("disabled","disabled");
+                   $('#get-cousins-form').attr('action', $('#action').val());
                    $('#get-cousins-form').submit();
                })
             });
@@ -27,9 +28,19 @@
                 <div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
             </div>
             <form id='get-cousins-form' action='/getCousins' method='POST'>
+                <div class="form-element">
+                    Choose what to search for:
+                    <select id="action" class="form-control">
+                        <option value="/getCousins" selected="selected">Cousins</option>
+                        <option value="/getAuntsUncles">Aunts & Uncles</option>
+                    </select>
+                </div>
                 <input type='hidden' name='token' value='@token'/>
-                <input type='text' name='pid' value='@personId'/>
-                <input type='button' id='get-cousins-button' class="btn btn-success center-block" value='Find Cousins'/>
+                <div class="form-element">
+                    Base this search on (default is you):
+                    <input type='text' class="form-control" name='pid' value='@personId'/>
+                </div>
+                <input type='button' id='get-cousins-button' class="btn btn-success center-block" value='Search!'/>
             </form>
         </div>
         <div id='footer-panel'>
