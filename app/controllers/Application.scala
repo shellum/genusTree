@@ -149,8 +149,6 @@ object Application extends Controller {
     val treeTuple = getCousinTree(token, pid)
     val grandparentSet = treeTuple._1
 
-    val auntUncleList = grandparentSet.getDescendants().sortBy(_.getName())
-
     // Remove descendants of Aunts/Uncles unless they are the user in question
     grandparentSet.getDescendants().foreach(p => {
       var containsSelf = false
@@ -160,7 +158,12 @@ object Application extends Controller {
       })
       if (!containsSelf)
         p.clearDescendants()
+      else
+        p.removeOtherDescendants(pid)
     })
+
+    val auntUncleList = grandparentSet.getDescendants().filter(p=>p.getDescendants().size==0).sortBy(_.getName())
+
     val json = grandparentSet.toJson
 
     Ok(views.html.cousins("Aunts & Uncles",auntUncleList.sorted, auntUncleList.size, json.toString()))
@@ -173,17 +176,22 @@ object Application extends Controller {
 
     val treeTuple = getCousinTree(token, pid)
     val grandparentSet = treeTuple._1
-    var cousinList = treeTuple._2
-
-    cousinList = cousinList.sortBy(_.getName())
+    var cousinList = List[Person]()
 
     val gps = Person("All Grandparents", "", "", None)
     // Only save aunts/uncles that have descendants
     grandparentSet.getDescendants().filter(p => {
       p.children.size > 0
     }).foreach(p => {
+      if (p.containsHighlight)
+        p.removeNonHighlighted()
       gps.addDescendant(p)
+      cousinList = p.getDescendants() ::: cousinList
     })
+
+    cousinList = cousinList.sortBy(_.getName())
+    cousinList = cousinList.filter(p=>p.pid != pid)
+
     val json = gps.toJson
 
     Ok(views.html.cousins("Cousins",cousinList.sorted, cousinList.size, json.toString()))
@@ -227,15 +235,19 @@ object Application extends Controller {
       .withHeaders(("Accept", "application/x-fs-v1+json"), ("Authorization", token))
       .get().map { response =>
       val body = response.body
-      val json = Json.parse(body)
-      val jsarray = json \ "persons"
-      ret = jsarray.as[List[JsObject]].foldLeft(List[Person]())((acc: List[Person], item: JsObject) => {
-        val id = (item \ "id").toString().replaceAll("\"", "")
-        val name = (item \ "display" \ "name").toString().replaceAll("\"", "")
-        val gender = (item \ "gender" \ "type").toString().replaceAll("\"", "").replace("http://gedcomx.org/", "")
-        val highlight = id.equals(selfPid)
-        Person(name, id, gender, Some[Person](parent), highlight) :: acc
-      })
+      body match {
+        case "" =>
+        case _ =>
+          val json = Json.parse(body)
+          val jsarray = json \ "persons"
+          ret = jsarray.as[List[JsObject]].foldLeft(List[Person]())((acc: List[Person], item: JsObject) => {
+            val id = (item \ "id").toString().replaceAll("\"", "")
+            val name = (item \ "display" \ "name").toString().replaceAll("\"", "")
+            val gender = (item \ "gender" \ "type").toString().replaceAll("\"", "").replace("http://gedcomx.org/", "")
+            val highlight = id.equals(selfPid)
+            Person(name, id, gender, Some[Person](parent), highlight) :: acc
+          })
+      }
     }
     Await.result(future, Duration(50, java.util.concurrent.TimeUnit.SECONDS))
     ret

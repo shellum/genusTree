@@ -27,9 +27,25 @@ case class Person(name: String, pid: String, gender: String, parent: Option[Pers
     })
   }
 
+  def removeOtherDescendants(pid: String) = {
+    children = children.filter(p=>{
+      pid == p.pid
+    })
+  }
+
   def addDescendants(people: List[Person]) = {
     people.foreach((person) => {
       addDescendant(person)
+    })
+  }
+
+  def containsHighlight() = {
+    children.filter(p=>p.highlight).size>0
+  }
+
+  def removeNonHighlighted() = {
+    children = children.filter(p=> {
+      p.highlight
     })
   }
 
