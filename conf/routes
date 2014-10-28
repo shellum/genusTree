@@ -3,5 +3,7 @@ GET     /oauth/token                controllers.Application.processToken
 POST    /search                     controllers.Application.search
 POST    /getCousins                 controllers.Application.getCousins
 POST    /getAuntsUncles             controllers.Application.getAuntsUncles
+POST    /nameCloud                  controllers.Application.nameCloud
+POST    /nameCloudDetails           controllers.Application.nameCloudDetails
 GET     /privacyPolicy              controllers.Application.privacyPolicy
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

@@ -11,30 +11,29 @@
         <script>
             $(function () {
                $('#get-cousins-button').click(function() {
+                   $('.progress').show();
                    $('#get-cousins-button').attr("disabled","disabled");
+                  // $('#get-cousins-form').attr('action', $('#action').val());
                    $('#get-cousins-form').submit();
                })
-                $('#name-cloud-button').click(function() {
-                    $('#name-cloud-button').attr("disabled","disabled");
-                    $('#name-cloud-form').submit();
-                })
             });
         </script>
     </head>
     <body>
         <div id='header-panel'>
-            <span class='header-text'>Menu</span><img id='header-logo' src="@routes.Assets.at("images/tree.gif")"/>
+            <span class='header-text'>Name Cloud Setup</span><img id='header-logo' src="@routes.Assets.at("images/tree.gif")"/>
         </div>
         <div id='main-panel'>
-            <form id='get-cousins-form' action='/search' method='POST'>
+            <div class="progress" style='display:none;'>
+                <div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+            </div>
+            <form id='get-cousins-form' action='/nameCloud' method='POST'>
                 <input type='hidden' name='token' value='@token'/>
-                <input type='hidden' name='pid' value='@personId'/>
-                <input type='button' id='get-cousins-button' class="btn btn-success center-block" value='Find Relatives'/>
-            </form>
-            <form id='name-cloud-form' action='/nameCloudDetails' method='POST'>
-                <input type='hidden' name='token' value='@token'/>
-                <input type='hidden' name='pid' value='@personId'/>
-                <input type='button' id='name-cloud-button' class="btn btn-success center-block" value='Name Cloud'/>
+                <div class="form-element">
+                    FamilySearch ID for starting point (default is you):
+                    <input type='text' class="form-control" name='pid' value='@personId'/>
+                </div>
+                <input type='button' id='get-cousins-button' class="btn btn-success center-block small-form-element" value='Search!'/>
             </form>
         </div>
         <div id='footer-panel'>

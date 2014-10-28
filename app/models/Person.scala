@@ -1,10 +1,10 @@
 package models
 
-case class Person(name: String, pid: String, gender: String, parent: Option[Person], highlight: Boolean = false) extends Ordered[Person] {
+case class Person(name: String, pid: String, gender: String, parent: Option[Person], highlight: Boolean = false, link: String = "", firstName: String = "") extends Ordered[Person] {
   var children: List[Person] = List[Person]()
   var altName = ""
 
-  override def hashCode(): Int = super.hashCode()
+  override def hashCode(): Int = pid.hashCode()
 
   override def equals(p1: scala.Any): Boolean = p1.asInstanceOf[Person].pid == pid
 

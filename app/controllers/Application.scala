@@ -18,13 +18,118 @@ object Application extends Controller {
 
   val FAMILYSEARCH_DEVELOPER_ID: String = Play.current.configuration.getString("familysearch.developer.id").get
   val FAMILYSEARCH_SERVER_URL: String = Play.current.configuration.getString("familysearch.server.url").get
+  val FAMILYSEARCH_IDENT_URL: String = Play.current.configuration.getString("familysearch.ident.url").get
 
   def index = Action {
-    Ok(views.html.index(FAMILYSEARCH_SERVER_URL))
+    Ok(views.html.index(FAMILYSEARCH_IDENT_URL))
   }
 
   def privacyPolicy = Action {
     Ok(views.html.privacy())
+  }
+
+  def nameCloud = Action { implicit request =>
+    val token = userForm.bindFromRequest.get.token
+    val pid = userForm.bindFromRequest.get.pid
+
+   // var allPeople = List[Person]()
+
+    var addedCousins: Map[String, Person] = Map[String, Person]()
+    val grandparentSet = Person("Grandparent Set", "", "", None, false)
+
+    var allPeople:List[Person]= List[Person]()
+
+    //Walk up the tree
+    val parents: List[Person] = getParents(token, Person("doesn't matter", pid, "", None))
+    val grandparents = parents.foldLeft(List[Person]())((acc, item) => getParents(token, item) ::: acc)
+
+
+
+
+    allPeople =  grandparents:::allPeople
+
+    //Walk back down the tree
+
+
+    //Get Aunts and Uncles
+    var auntUncleFutures = List[Future[List[Person]]]()
+    grandparents.foreach((item) => {
+      auntUncleFutures = future {
+        getChildren(token, pid, item)
+      } :: auntUncleFutures
+    })
+
+    val allAuntUncleFutures = Future.sequence(auntUncleFutures).map {
+      lst => lst.foreach(l => allPeople = allPeople ::: l)
+    }
+    Await.result(allAuntUncleFutures, Duration(50, TimeUnit.SECONDS))
+
+    allPeople = allPeople.distinct
+
+    // Get cousins
+    var cousinFutures = List[Future[List[Person]]]()
+    allPeople.foreach((item) => {
+      cousinFutures = future {
+        getChildren(token, pid, item)
+      } :: cousinFutures
+    })
+
+    var allCousins = List[Person]()
+    val allCousinFutures = Future.sequence(cousinFutures).map {
+      auntUncleChildren: List[List[Person]] => {
+        auntUncleChildren.foreach((singleAuntUncleChildren: List[Person]) => {
+          allPeople = allPeople ::: singleAuntUncleChildren
+        })
+      }
+    }
+
+    val rrrrr = Await.result(allCousinFutures, Duration(50, TimeUnit.SECONDS))
+
+    val cousinList = allCousins.foldLeft(List[Person]())((acc, item) => {
+      if (item.pid != pid)
+        item :: acc
+      else
+        acc
+    })
+
+    var json = "["
+    var nameMap = Map[String, Int]()
+    allPeople.distinct.foreach(p=>{
+      val allButLastName = p.name.split(" ")
+      (0 to allButLastName.length - 1).foreach(namePart => {
+        val count = nameMap.get(p.firstName)
+        count match {
+          case Some(x) => nameMap = nameMap + (p.firstName -> (nameMap.get(p.firstName).get + 5))
+            System.out.println("add 5 to " + p.firstName + " for " + p.name + " " + p.pid)
+          case _ => nameMap = nameMap + (p.firstName -> 5)
+            System.out.println("init to " + p.firstName + " for " + p.name + " " + p.pid)
+        }
+      })
+    })
+    nameMap.foreach(p => {
+      json = json + "{name:\"" + p._1 + "\",size:"+p._2+"},"
+    })
+
+    nameMap.foreach(p => {
+      json = json + "{name:\"" + p._1 + "\",size:5},"
+    })
+  /*  nameMap.foreach(p => {
+      json = json + "{name:\"" + p._1 + "\",size:5},"
+    })
+    nameMap.foreach(p => {
+      json = json + "{name:\"" + p._1 + "\",size:5},"
+    })
+    nameMap.foreach(p => {
+      json = json + "{name:\"" + p._1 + "\",size:5},"
+    })
+    nameMap.foreach(p => {
+      json = json + "{name:\"" + p._1 + "\",size:5},"
+    })*/
+
+    json = json.substring(0,json.length-1)
+    json = json + "]"
+
+    Ok(views.html.namecloud(json))
   }
 
   def search = Action {
@@ -36,6 +141,15 @@ object Application extends Controller {
     }
   }
 
+  def nameCloudDetails = Action {
+    implicit request => {
+      val token = userForm.bindFromRequest.get.token
+      val pid = userForm.bindFromRequest.get.pid
+
+      Ok(views.html.nameclouddetails(token, pid))
+    }
+  }
+
   def processToken = Action { implicit request =>
 
     var ret = "";
@@ -43,7 +157,7 @@ object Application extends Controller {
     val requestMap = Map("grant_type" -> Seq("authorization_code"),
       "code" -> Seq(code),
       "client_id" -> Seq(FAMILYSEARCH_DEVELOPER_ID))
-    val future = WS.url(FAMILYSEARCH_SERVER_URL + "/cis-web/oauth2/v3/token")
+    val future = WS.url(FAMILYSEARCH_IDENT_URL + "/cis-web/oauth2/v3/token")
       .post(requestMap).map { response =>
       ret = response.body
     }
@@ -221,7 +335,9 @@ object Application extends Controller {
             val id = (item \ "id").toString().replaceAll("\"", "")
             val name = (item \ "display" \ "name").toString().replaceAll("\"", "")
             val gender = (item \ "gender" \ "type").toString().replaceAll("\"", "").replace("http://gedcomx.org/", "")
-            Person(name, id, gender, None) :: acc
+            val link = (item \ "links" \ "person" \ "href").toString().replaceAll("\"", "")
+            val person = Person(name, id, gender, None, link = link)
+            person :: acc
           })
       }
     }
@@ -244,8 +360,15 @@ object Application extends Controller {
             val id = (item \ "id").toString().replaceAll("\"", "")
             val name = (item \ "display" \ "name").toString().replaceAll("\"", "")
             val gender = (item \ "gender" \ "type").toString().replaceAll("\"", "").replace("http://gedcomx.org/", "")
+            val link = (item \ "links" \ "person" \ "href").toString().replaceAll("\"", "")
+            val firstName = ((item \ "names")(0))
+            val firsts = (firstName \ "nameForms")(0)
+            val fir = (firsts \ "parts")
+            val firstNamez = (fir(0) \ "value").toString().replaceAll("\"", "").split(" ")(0)
+            System.out.println("!!!!" + firstNamez + " --- " + name)
             val highlight = id.equals(selfPid)
-            Person(name, id, gender, Some[Person](parent), highlight) :: acc
+            val person = Person(name, id, gender, Some[Person](parent), highlight = highlight, link = link, firstName = firstNamez)
+            person :: acc
           })
       }
     }

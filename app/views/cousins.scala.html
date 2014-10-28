@@ -9,18 +9,60 @@
     <link rel="stylesheet" media="all and (max-width: 600px)" href="@routes.Assets.at("stylesheets/main-small.css")">
     <script src="@routes.Assets.at("javascripts/jquery-1.11.1.min.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/d3.min.js")" type="text/javascript"></script>
+    <script>
+        $(function() {
+            $('.list-group-item').click(function (e) {
+            })
+            var fill = d3.scale.category20();
+
+            d3.layout.cloud().size([300, 300])
+                    .words([
+                        {text:".NET",size:5},{text:"Cameron",size:9},{text:"try",size:2},{text:"David",size:5},
+                        {text:"juice",size:20},{text:"puppies",size:3},{text:"jimmy",size:3},{text:"Grace",size:5}].map(function(d) {
+                                return {text: d.text, size: d.size * 5};
+                            }))
+                    .rotate(function() { return ~~(Math.random() * 2) * 90; })
+                    .font("Impact")
+                    .fontSize(function(d) {
+                        return d.size;
+                    })
+                    .on("end", draw)
+                    .start();
+
+            function draw(words) {
+                d3.select("body").append("svg")
+                        .attr("width", 300)
+                        .attr("height", 300)
+                        .append("g")
+                        .attr("transform", "translate(150,150)")
+                        .selectAll("text")
+                        .data(words)
+                        .enter().append("text")
+                        .style("font-size", function(d) { return d.size + "px"; })
+                        .style("font-family", "Impact")
+                        .style("fill", function(d, i) { return fill(i); })
+                        .attr("text-anchor", "middle")
+                        .attr("transform", function(d) {
+                            return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                        })
+                        .text(function(d) { return d.text; });
+            }
+        });
+    </script>
 </head>
     <body>
         <div id='header-panel'>
             <span class='header-text'>@title</span><img id='header-logo' src="@routes.Assets.at("images/tree.gif")"/>
         </div>
         <div id='main-panel'>
+            @import java.math.BigInteger; var i=0
             @if(numPeople == 0) {
                 No @title were found.
             }
             <ul id='person-list' class="list-group">
                 @for((p) <- peopleSet) {
-                    <li class="list-group-item left-list-item">@p.name @p.altName</li>
+                    @(i+=1)
+                    <li class="list-group-item left-list-item" href="@p.link">@i @p.name @p.altName</li>
                 }
             </ul>
         </div>
@@ -31,7 +73,7 @@
 
             var margin = {top: 20, right: 120, bottom: 20, left: 120},
                     width = 600 - margin.right - margin.left,
-                    height = (@numPeople * 50)+50 - margin.top - margin.bottom;
+                    height = (@numPeople * 16)+50 - margin.top - margin.bottom;
 
             var i = 0,
                     duration = 750,
