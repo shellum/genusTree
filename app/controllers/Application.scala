@@ -41,8 +41,9 @@ object Application extends Controller {
     var allPeople:List[Person]= List[Person]()
 System.out.println("starting walk up tree")
     //Walk up the tree
-    var parents: List[Person] = getParents(token, Person("doesn't matter", pid, "", None))
-    (1 to generations).foreach(p=>parents = parents.foldLeft(List[Person]())((acc, item) => getParents(token, item) ::: acc))
+    //Start with self
+    var parents: List[Person] = List(Person("doesn't matter", pid, "", None))
+    (1 to generations-1).foreach(p=>parents = parents.foldLeft(List[Person]())((acc, item) => getParents(token, item) ::: acc))
 
 
 
@@ -51,46 +52,28 @@ System.out.println("starting walk up tree")
     //Walk back down the tree
 
     System.out.println("done with walk up tree")
-    //Get Aunts and Uncles
-    var auntUncleFutures = List[Future[List[Person]]]()
-    parents.foreach((item) => {
-      auntUncleFutures = future {
-        getChildren(token, pid, item)
-      } :: auntUncleFutures
-    })
 
-    val allAuntUncleFutures = Future.sequence(auntUncleFutures).map {
-      lst => lst.foreach(l => allPeople = allPeople ::: l)
-    }
-    Await.result(allAuntUncleFutures, Duration(50, TimeUnit.SECONDS))
-    System.out.println("done with aunts uncles")
-    allPeople = allPeople.distinct
+    (1 to generations-1).foreach(something => {
+      var nextGenToFollow = List[Person]()
+      //Go down one generation
+      var auntUncleFutures = List[Future[List[Person]]]()
+      parents.foreach((item) => {
+        auntUncleFutures = future {
+          getChildren(token, pid, item)
+        } :: auntUncleFutures
+      })
 
-    // Get cousins
-    var cousinFutures = List[Future[List[Person]]]()
-    allPeople.foreach((item) => {
-      cousinFutures = future {
-        getChildren(token, pid, item)
-      } :: cousinFutures
-    })
-
-    var allCousins = List[Person]()
-    val allCousinFutures = Future.sequence(cousinFutures).map {
-      auntUncleChildren: List[List[Person]] => {
-        auntUncleChildren.foreach((singleAuntUncleChildren: List[Person]) => {
-          allPeople = allPeople ::: singleAuntUncleChildren
+      val allAuntUncleFutures = Future.sequence(auntUncleFutures).map {
+        lst => lst.foreach(l => allPeople = {
+          nextGenToFollow = l
+          allPeople ::: l
         })
       }
-    }
-
-    val rrrrr = Await.result(allCousinFutures, Duration(50, TimeUnit.SECONDS))
-    System.out.println("done with cousins")
-    val cousinList = allCousins.foldLeft(List[Person]())((acc, item) => {
-      if (item.pid != pid)
-        item :: acc
-      else
-        acc
+      Await.result(allAuntUncleFutures, Duration(50, TimeUnit.SECONDS))
+      parents = nextGenToFollow
+      System.out.println("done with going down one generation")
     })
+
 
     var json = "["
     var nameMap = Map[String, Int]()
