@@ -1,6 +1,6 @@
 #header-panel {
     margin: 20px auto auto auto;
-    width: 600px;
+    width: 900px;
     height: 50px;
     background-color: #f8f8f8;
     color: #4f5f2b;
@@ -19,18 +19,23 @@
 
 #footer-panel {
     margin: 0px auto auto auto;
-    width: 600px;
+    width: 900px;
     height: 30px;
     background-color: #f8f8f8;
     color: #4f5f2b;
     position: relative;
     border: 1px solid #cccccc;
+    clear: both;
 }
 
 .form-element {
-    width: 75%;
+    width: 33%;
     text-align: left;
     margin: 10px;
+}
+
+.padded-button {
+    margin: 10px auto 10px auto;
 }
 
 .small-form-element {
@@ -58,7 +63,7 @@
 #main-panel {
     margin: 0px auto auto auto;
     padding: 10px;
-    width: 600px;
+    width: 900px;
     height: 450px;
     background: -webkit-linear-gradient(left bottom, #FFFDEB 25%, #E7F8EA, #c9e3d9 75%, #FBFCF4);
     text-align:center;

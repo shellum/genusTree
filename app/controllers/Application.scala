@@ -2,7 +2,7 @@ package controllers
 
 import java.util.concurrent.TimeUnit
 
-import models.Person
+import models.{SimplePerson, Person}
 import play.api.Play
 import play.api.data.Forms._
 import play.api.data._
@@ -29,8 +29,9 @@ object Application extends Controller {
   }
 
   def nameCloud = Action { implicit request =>
-    val token = userForm.bindFromRequest.get.token
-    val pid = userForm.bindFromRequest.get.pid
+    val token = nameCloudForm.bindFromRequest.get.token
+    val pid = nameCloudForm.bindFromRequest.get.pid
+    val generations = nameCloudForm.bindFromRequest.get.generations
 
    // var allPeople = List[Person]()
 
@@ -38,22 +39,21 @@ object Application extends Controller {
     val grandparentSet = Person("Grandparent Set", "", "", None, false)
 
     var allPeople:List[Person]= List[Person]()
-
+System.out.println("starting walk up tree")
     //Walk up the tree
-    val parents: List[Person] = getParents(token, Person("doesn't matter", pid, "", None))
-    val grandparents = parents.foldLeft(List[Person]())((acc, item) => getParents(token, item) ::: acc)
+    var parents: List[Person] = getParents(token, Person("doesn't matter", pid, "", None))
+    (1 to generations).foreach(p=>parents = parents.foldLeft(List[Person]())((acc, item) => getParents(token, item) ::: acc))
 
 
 
-
-    allPeople =  grandparents:::allPeople
+    allPeople =  parents:::allPeople
 
     //Walk back down the tree
 
-
+    System.out.println("done with walk up tree")
     //Get Aunts and Uncles
     var auntUncleFutures = List[Future[List[Person]]]()
-    grandparents.foreach((item) => {
+    parents.foreach((item) => {
       auntUncleFutures = future {
         getChildren(token, pid, item)
       } :: auntUncleFutures
@@ -63,7 +63,7 @@ object Application extends Controller {
       lst => lst.foreach(l => allPeople = allPeople ::: l)
     }
     Await.result(allAuntUncleFutures, Duration(50, TimeUnit.SECONDS))
-
+    System.out.println("done with aunts uncles")
     allPeople = allPeople.distinct
 
     // Get cousins
@@ -84,7 +84,7 @@ object Application extends Controller {
     }
 
     val rrrrr = Await.result(allCousinFutures, Duration(50, TimeUnit.SECONDS))
-
+    System.out.println("done with cousins")
     val cousinList = allCousins.foldLeft(List[Person]())((acc, item) => {
       if (item.pid != pid)
         item :: acc
@@ -96,23 +96,50 @@ object Application extends Controller {
     var nameMap = Map[String, Int]()
     allPeople.distinct.foreach(p=>{
       val allButLastName = p.name.split(" ")
-      (0 to allButLastName.length - 1).foreach(namePart => {
-        val count = nameMap.get(p.firstName)
+      (0 to allButLastName.length - 2).foreach(index => {
+        val part = allButLastName(index)
+        val count = nameMap.get(part.toUpperCase)
+        if (part != "" && part.length > 1 && !excludedNames.contains(part.toLowerCase()))
         count match {
-          case Some(x) => nameMap = nameMap + (p.firstName -> (nameMap.get(p.firstName).get + 5))
-            System.out.println("add 5 to " + p.firstName + " for " + p.name + " " + p.pid)
-          case _ => nameMap = nameMap + (p.firstName -> 5)
-            System.out.println("init to " + p.firstName + " for " + p.name + " " + p.pid)
+          case Some(x) => nameMap = nameMap + (part.toUpperCase() -> (nameMap.get(part.toUpperCase()).get + 5))
+            System.out.println("add 5 to " + part + " for " + p.name + " " + p.pid)
+          case _ => nameMap = nameMap + (part.toUpperCase() -> 5)
+            System.out.println("init to " + part + " for " + p.name + " " + p.pid)
         }
       })
     })
-    nameMap.foreach(p => {
-      json = json + "{name:\"" + p._1 + "\",size:"+p._2+"},"
-    })
+
+
+
+    var nameCount = 0
+    var simplePersonList = List[SimplePerson]()
 
     nameMap.foreach(p => {
-      json = json + "{name:\"" + p._1 + "\",size:5},"
+      System.out.println(p._1 + " : " + p._2)
+      simplePersonList = SimplePerson(p._1,p._2) :: simplePersonList
     })
+
+    val sortedSimpleList = simplePersonList.sortWith(_.count > _.count)
+
+    var maxSize = 0
+    sortedSimpleList.foreach(p=> {
+      if (p.count > maxSize)
+        maxSize = p.count
+    })
+
+    sortedSimpleList.foreach(p=> {
+      nameCount = nameCount + 1
+      if (nameCount < 100)
+      json = json + "{name:\"" + p.name + "\",size:"+((p.count * 40) / maxSize)+"},"
+    })
+
+    if (nameCount < 100)
+    do {
+      nameMap.foreach(p => {
+        nameCount = nameCount + 1
+        json = json + "{name:\"" + p._1 + "\",size:10},"
+      })
+    } while(nameCount < 100)
   /*  nameMap.foreach(p => {
       json = json + "{name:\"" + p._1 + "\",size:5},"
     })
@@ -131,6 +158,8 @@ object Application extends Controller {
 
     Ok(views.html.namecloud(json))
   }
+
+  def excludedNames = List("stillborn","stilborn","still")
 
   def search = Action {
     implicit request => {
@@ -382,7 +411,15 @@ object Application extends Controller {
       "pid" -> text
     )(Cousins.apply)(Cousins.unapply)
   )
+  val nameCloudForm = Form(
+    mapping(
+      "token" -> text,
+      "pid" -> text,
+      "generations" -> number
+    )(NameCloudParams.apply)(NameCloudParams.unapply)
+  )
 
 }
 
 case class Cousins(token: String, pid: String)
+case class NameCloudParams(token: String, pid: String, generations: Int)

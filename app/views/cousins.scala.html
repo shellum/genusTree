@@ -59,10 +59,10 @@
             @if(numPeople == 0) {
                 No @title were found.
             }
-            <ul id='person-list' class="list-group">
+            <ul id='person-list' class="list-group" style="float:left">
                 @for((p) <- peopleSet) {
                     @(i+=1)
-                    <li class="list-group-item left-list-item" href="@p.link">@i @p.name @p.altName</li>
+                    <li class="list-group-item left-list-item" style='margin-left:10px;margin-right:10px;' href="@p.link">@i @p.name @p.altName</li>
                 }
             </ul>
         </div>
@@ -71,8 +71,8 @@
         </div>
         <script>
 
-            var margin = {top: 20, right: 120, bottom: 20, left: 120},
-                    width = 600 - margin.right - margin.left,
+                        var margin = {top: 20, right: 120, bottom: 20, left: 120},
+                                        width = 630 - margin.right - margin.left,
                     height = (@numPeople * 16)+50 - margin.top - margin.bottom;
 
             var i = 0,
@@ -88,6 +88,7 @@
             var svg = d3.select("#main-panel").append("svg")
                     .attr("width", width + margin.right + margin.left)
                     .attr("height", height + margin.top + margin.bottom)
+                    .attr("style","float:left")
                     .append("g")
                     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 

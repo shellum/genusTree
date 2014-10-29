@@ -10,11 +10,10 @@
         <script src="@routes.Assets.at("javascripts/jquery-1.11.1.min.js")" type="text/javascript"></script>
         <script>
             $(function () {
-               $('#get-cousins-button').click(function() {
+               $('#name-cloud-setup-button').click(function() {
                    $('.progress').show();
-                   $('#get-cousins-button').attr("disabled","disabled");
-                  // $('#get-cousins-form').attr('action', $('#action').val());
-                   $('#get-cousins-form').submit();
+                   $('#name-cloud-setup').attr("disabled","disabled");
+                   $('#name-cloud-setup-form').submit();
                })
             });
         </script>
@@ -27,13 +26,21 @@
             <div class="progress" style='display:none;'>
                 <div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
             </div>
-            <form id='get-cousins-form' action='/nameCloud' method='POST'>
+            <form id='name-cloud-setup-form' action='/nameCloud' method='POST'>
                 <input type='hidden' name='token' value='@token'/>
+                <div class="form-element">
+                    Number of generations:
+                    <select name="generations" class="form-control">
+                        <option value="3" selected="selected">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                </div>
                 <div class="form-element">
                     FamilySearch ID for starting point (default is you):
                     <input type='text' class="form-control" name='pid' value='@personId'/>
                 </div>
-                <input type='button' id='get-cousins-button' class="btn btn-success center-block small-form-element" value='Search!'/>
+                <input type='button' id='name-cloud-setup-button' class="btn btn-success center-block small-form-element" value='Search!'/>
             </form>
         </div>
         <div id='footer-panel'>

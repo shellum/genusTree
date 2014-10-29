@@ -29,117 +29,13 @@ function drawTree(words) {
         "#556270",
         "#C7F464",
         'CornflowerBlue', 'Crimson', 'DarkOrange', 'DarkOrchid', 'DarkTurquoise', 'Fuchsia', 'Gold', 'HotPink', 'LightSeaGreen', 'SteelBlue'];
-//    var words = [
-//        {name: 'David', size: 60},
-//        {name: 'Liz', size: 40},
-//        {name: 'Grace', size: 35},
-//
-//// {name:'Liz',size:30},
-//// {name:'Cameron',size:30},
-//// {name:'Liz',size:30},
-////   {name:'Grace',size:30},
-//
-//        {name: 'Tom', size: 10},
-//        {name: 'Jennie', size: 10},
-//        {name: 'Justin', size: 10},
-//        {name: 'Tom', size: 10},
-//        {name: 'Jennie', size: 10},
-//        {name: 'Justin', size: 10},
-//        {name: 'Tom', size: 10},
-//        {name: 'Jennie', size: 10},
-//        {name: 'Justin', size: 10},
-//        {name: 'Doug', size: 10},
-//        {name: 'Ben', size: 10},
-//        {name: 'Jordan', size: 10},
-//        {name: 'John', size: 10},
-//        {name: 'Doug', size: 10},
-//        {name: 'Ben', size: 10},
-//        {name: 'Jordan', size: 10},
-//        {name: 'John', size: 10},
-//        {name: 'David', size: 10},
-//        {name: 'Cameron', size: 10},
-//        {name: 'Liz', size: 10},
-//        {name: 'Grace', size: 10},
-//        {name: 'Emma', size: 10},
-//        {name: 'Nick', size: 10},
-//        {name: 'Tom', size: 10},
-//        {name: 'Liz', size: 30},
-//        {name: 'Cameron', size: 30},
-//        {name: 'Liz', size: 30},
-//        {name: 'Grace', size: 30},
-//
-//        {name: 'Jennie', size: 10},
-//        {name: 'David', size: 10},
-//        {name: 'Cameron', size: 10},
-//        {name: 'Liz', size: 10},
-//        {name: 'Grace', size: 10},
-//        {name: 'David', size: 10},
-//        {name: 'Cameron', size: 10},
-//        {name: 'Liz', size: 10},
-//        {name: 'Grace', size: 10},
-//        {name: 'Emma', size: 10},
-//        {name: 'Nick', size: 10},
-//        {name: 'Tom', size: 10},
-//        {name: 'Jennie', size: 10},
-//        {name: 'David', size: 10},
-//        {name: 'Cameron', size: 10},
-//        {name: 'Liz', size: 10},
-//        {name: 'Grace', size: 10},
-//        {name: 'Emma', size: 25},
-//        {name: 'Nick', size: 25},
-//        {name: 'Emma', size: 25},
-//        {name: 'Nick', size: 25},
-//        {name: 'Tom', size: 10},
-//        {name: 'Jennie', size: 10},
-//        {name: 'Justin', size: 10},
-//        {name: 'Tom', size: 10},
-//        {name: 'Jennie', size: 10},
-//        {name: 'Justin', size: 10},
-//        {name: 'Tom', size: 10},
-//        {name: 'Jennie', size: 10},
-//        {name: 'Justin', size: 10},
-//        {name: 'Doug', size: 10},
-//        {name: 'Ben', size: 10},
-//        {name: 'Jordan', size: 10},
-//        {name: 'John', size: 10},
-//        {name: 'Doug', size: 10},
-//        {name: 'Ben', size: 10},
-//        {name: 'Jordan', size: 10},
-//        {name: 'John', size: 10},
-//        {name: 'David', size: 10},
-//        {name: 'Cameron', size: 10},
-//        {name: 'Liz', size: 10},
-//        {name: 'Grace', size: 10},
-//        {name: 'Emma', size: 10},
-//        {name: 'Nick', size: 10},
-//        {name: 'Tom', size: 10},
-//        {name: 'Jennie', size: 10},
-//        {name: 'David', size: 10},
-//        {name: 'Cameron', size: 10},
-//        {name: 'Liz', size: 10},
-//        {name: 'Grace', size: 10},
-//        {name: 'David', size: 10},
-//        {name: 'Cameron', size: 10},
-//        {name: 'Liz', size: 10},
-//        {name: 'Grace', size: 10},
-//        {name: 'Emma', size: 10},
-//        {name: 'Nick', size: 10},
-//        {name: 'Tom', size: 10},
-//        {name: 'Jennie', size: 10},
-//        {name: 'David', size: 10},
-//        {name: 'Cameron', size: 10},
-//        {name: 'Liz', size: 10},
-//        {name: 'Emma', size: 10}
-//
-//    ];
+
     canvas = document.getElementById('canvas');
     context = canvas.getContext('2d');
 
     var rr = 500;
     var sz = 40;
     context.font = sz + 'pt Calibri';
-    //   context.fillText('asdfasdf', 0,10);
-    //   var context=c.getContext("2d");
     context.fillStyle = "#ffffff";
     context.strokeStyle = "#e0e0e0";
     context.lineWidth = 3;
@@ -225,7 +121,7 @@ function drawTree(words) {
     context.lineTo(248.07260999999994,427.0000100000001);
     context.lineTo(168.37660999999994,427.0000100000001);
     context.stroke();
-    //    context.fillText('asdfasdf', -60+rr,-60+rr);
+
     var g = 0;
     for (u = 0; u < 1; u++) {
         console.log(u);
@@ -236,21 +132,16 @@ function drawTree(words) {
             if (w.size > 10) w.size = w.size * 1.5
             placeText(w.name.toUpperCase(), w.size);
         });
-        // for(y=0;y<200;y++){
-        // console.log(g+'/'+words.length);
-        // g++;
-        //   context.fillStyle=colors[(Math.floor(Math.random() * 100 % colors.length))];
-        //   //if (w.size > 10) w.size = w.size * 1.5
-        //   placeText('.', Math.random() * 100 % 40 + 10);
-        // }
     }
 
 };
 
 function placeText(text, sz) {
+    if (text == 'NELSON')
+    text = 'NELSON';
     context.font = sz + 'pt Calibri';
     var cwidth = context.measureText(text).width;
-    var cheight = sz;//context.measureText(text).height;
+    var cheight = sz;
     var x = 100;
     var y = 100;
     var canput = false;
@@ -261,21 +152,7 @@ function placeText(text, sz) {
     var inc = 5;
     var centerCoord = 200;
     do {
-        canput = true;
-        //  (xdelta+','+ydelta+' .. '+xbounds+','+ybounds);
-//  console.log('start');
-        taken.forEach(function (item) {
-            if (!testPut(xdelta, ydelta, cwidth, cheight, item.x, item.y, item.width, item.height, text))
-                canput = false;
 
-        });
-        //  console.log('end');
-        //  var d = document.getElementById('d');
-        //  $('body').append("<div  style='background-color:#ff0000;width:10px;height:10px;position:absolute;left:"+xdelta+"px;top:"+ydelta+"px'></div>");
-
-//d.style.position = "absolute";
-//d.style.left = (xdelta)+'px';
-//d.style.top = (ydelta)+'px';
         if (xdelta < xbounds && inc > 0) {
             xdelta += inc;
         }
@@ -294,10 +171,6 @@ function placeText(text, sz) {
             if (inc < 0) {
                 xbounds += inc;
                 ybounds += inc;
-// if (Math.floor(Math.random()*100)%2==0)
-//   xbounds += inc;
-// if (Math.floor(Math.random()*100)%2==0)
-//   ybounds += inc;
             }
         }
         else {
@@ -306,16 +179,29 @@ function placeText(text, sz) {
         }
         var precalcxdelta = xdelta + centerCoord;
         var precalcydelta = ydelta + centerCoord;
+
+        canput = true;
+
+        taken.forEach(function (item) {
+            if (!testPut(xdelta, ydelta, cwidth, cheight, item.x, item.y, item.width, item.height, text, item.txt))
+                canput = false;
+
+        });
+
     } while (xdelta + centerCoord > -100 && (canput == false || !context.isPointInPath(precalcxdelta + cwidth, precalcydelta) || !context.isPointInPath(precalcxdelta, precalcydelta) || !context.isPointInPath(precalcxdelta + cwidth, precalcydelta - cheight) || !context.isPointInPath(precalcxdelta, precalcydelta - cheight)
         ));
+    if (text == 'NELSON')
+        text = 'NELSON';
     if (xdelta + 200 > 0) {
         taken.push({x: xdelta, y: ydelta, width: cwidth, height: cheight, txt: text});
         context.fillText(text, precalcxdelta, precalcydelta);
     }
 }
 
-//change this.. the x1,y1 is the bottom left corner of a lower case a
-function testPut(x1, y1, width1, height1, x2, y2, width2, height2, text) {
+
+function testPut(x1, y1, width1, height1, x2, y2, width2, height2, text, text2) {
+    if (text == "NELSON" && text2 == "ALICE")
+    text = 'WHOA';
     if (x1 + width1 < x2 || // To the right of
         y1 < y2 - height2 || // Under
         x1 > x2 + width2 || // To the left of
