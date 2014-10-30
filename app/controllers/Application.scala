@@ -39,7 +39,7 @@ object Application extends Controller {
     val grandparentSet = Person("Grandparent Set", "", "", None, false)
 
     var allPeople:List[Person]= List[Person]()
-System.out.println("starting walk up tree")
+    System.out.println("starting walk up tree")
     //Walk up the tree
     //Start with self
     var parents: List[Person] = List(Person("doesn't matter", pid, "", None))
@@ -85,9 +85,7 @@ System.out.println("starting walk up tree")
         if (part != "" && part.length > 1 && !excludedNames.contains(part.toLowerCase()))
         count match {
           case Some(x) => nameMap = nameMap + (part.toUpperCase() -> (nameMap.get(part.toUpperCase()).get + 5))
-            System.out.println("add 5 to " + part + " for " + p.name + " " + p.pid)
           case _ => nameMap = nameMap + (part.toUpperCase() -> 5)
-            System.out.println("init to " + part + " for " + p.name + " " + p.pid)
         }
       })
     })
@@ -98,7 +96,6 @@ System.out.println("starting walk up tree")
     var simplePersonList = List[SimplePerson]()
 
     nameMap.foreach(p => {
-      System.out.println(p._1 + " : " + p._2)
       simplePersonList = SimplePerson(p._1,p._2) :: simplePersonList
     })
 
@@ -377,7 +374,6 @@ System.out.println("starting walk up tree")
             val firsts = (firstName \ "nameForms")(0)
             val fir = (firsts \ "parts")
             val firstNamez = (fir(0) \ "value").toString().replaceAll("\"", "").split(" ")(0)
-            System.out.println("!!!!" + firstNamez + " --- " + name)
             val highlight = id.equals(selfPid)
             val person = Person(name, id, gender, Some[Person](parent), highlight = highlight, link = link, firstName = firstNamez)
             person :: acc
