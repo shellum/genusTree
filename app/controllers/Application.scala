@@ -122,7 +122,7 @@ System.out.println("starting walk up tree")
         nameCount = nameCount + 1
         json = json + "{name:\"" + p._1 + "\",size:10},"
       })
-    } while(nameCount < 100)
+    } while(nameCount < 150)
   /*  nameMap.foreach(p => {
       json = json + "{name:\"" + p._1 + "\",size:5},"
     })

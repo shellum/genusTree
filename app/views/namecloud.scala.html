@@ -12,17 +12,24 @@
     <script src="@routes.Assets.at("javascripts/nametree.js")"></script>
     <script>
         $(function() {
-
-                       drawTree(@Html(json));
+            var canvas = document.getElementById("canvas");
+            var context = canvas.getContext("2d");
+            var width = $('#canvas').attr('width').replace('px','');
+            var height = $('#canvas').attr('height').replace('px','');
+            $('main-panel').css('background',0);
+            context.rect(0,0,width,height);
+            context.fillStyle="white";
+            context.fill();
+            drawTree(@Html(json));
         });
     </script>
 </head>
     <body>
         <div id='header-panel'>
-            <span class='header-text'>Name Cloud</span><img id='header-logo' src="@routes.Assets.at("images/tree.gif")"/>
+            <span class='header-text'>GenusTree Name Cloud</span><img id='header-logo' src="@routes.Assets.at("images/tree.gif")"/>
         </div>
         <div id='main-panel'>
-            <canvas id="canvas" height="500px" width="500px"/>
+            <canvas id="canvas" height="500px" width="525px"/>
         </div>
         <div id='footer-panel'>
             <div id='footer-text'><a href="/privacyPolicy">Privacy Policy</a><a id='logout-link' href="/">Logout</a></div>
