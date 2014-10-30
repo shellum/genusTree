@@ -10,11 +10,11 @@
         <script src="@routes.Assets.at("javascripts/jquery-1.11.1.min.js")" type="text/javascript"></script>
         <script>
             $(function () {
-               $('#get-cousins-button').click(function() {
+               $('#get-cousins-form').click(function() {
                    $('#get-cousins-button').attr("disabled","disabled");
                    $('#get-cousins-form').submit();
                })
-                $('#name-cloud-button').click(function() {
+                $('#name-cloud-form').click(function() {
                     $('#name-cloud-button').attr("disabled","disabled");
                     $('#name-cloud-form').submit();
                 })
@@ -27,12 +27,15 @@
         </div>
         <div id='main-panel'>
             *GenusTree does not know about living family members that you have not manually added to your FamilySearch tree.
-            <form id='get-cousins-form' action='/search' method='POST'>
+            <br>
+            <form id='get-cousins-form' style='float:left;margin:10px' action='/search' method='POST'>
+                <img id='get-cousins-image' style='cursor: pointer; cursor: hand;' src="@routes.Assets.at("images/MenuRelativeList.png")"/>
                 <input type='hidden' name='token' value='@token'/>
                 <input type='hidden' name='pid' value='@personId'/>
                 <input type='button' id='get-cousins-button' class="btn btn-success center-block padded-button" value='Find Relatives'/>
             </form>
-            <form id='name-cloud-form' action='/nameCloudDetails' method='POST'>
+            <form id='name-cloud-form' style='float:left;margin:10px' action='/nameCloudDetails' method='POST'>
+                <img id='name-cloud-image' style='cursor: pointer; cursor: hand;' src="@routes.Assets.at("images/MenuNameCloud.png")"/>
                 <input type='hidden' name='token' value='@token'/>
                 <input type='hidden' name='pid' value='@personId'/>
                 <input type='button' id='name-cloud-button' class="btn btn-success center-block padded-button" value='Name Cloud'/>
