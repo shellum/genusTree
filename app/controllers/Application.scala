@@ -6,7 +6,7 @@ import models.{SimplePerson, Person}
 import play.api.Play
 import play.api.data.Forms._
 import play.api.data._
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.{JsUndefined, JsObject, Json}
 import play.api.libs.ws.WS
 import play.api.mvc._
 
@@ -57,8 +57,10 @@ object Application extends Controller {
       var nextGenToFollow = List[Person]()
       //Go down one generation
       var auntUncleFutures = List[Future[List[Person]]]()
+      System.out.println("About to spawn "+parents.size)
       parents.foreach((item) => {
         auntUncleFutures = future {
+          System.out.println("in x")
           getChildren(token, pid, item)
         } :: auntUncleFutures
       })
@@ -139,7 +141,7 @@ object Application extends Controller {
     Ok(views.html.namecloud(json))
   }
 
-  def excludedNames = List("stillborn","stilborn","still")
+  def excludedNames = List("stillborn","stilborn","still","mr.","mr","miss","miss.","mrs","mrs.")
 
   def search = Action {
     implicit request => {
@@ -173,15 +175,22 @@ object Application extends Controller {
 
     Await.result(future, Duration(5, java.util.concurrent.TimeUnit.SECONDS))
     val json = Json.parse(ret)
-    var token: String = (json \ "access_token").toString
-    token = "Bearer " + token.replaceAll("\"", "")
 
-    val user = getCurrentUser(token)
-    val j = Json.parse(user)
-    val jsarray = j \ "users"
-    val personId = (jsarray(0) \ "personId").toString().replace("\"", "")
-    val displayName = (jsarray(0) \ "displayName").toString().replace("\"", "")
-    Ok(views.html.menu(token, personId))
+    (json \ "access_token").asOpt[String] match {
+      case None => Redirect(routes.Application.index())
+      case Some(x) =>
+        var token: String = (json \ "access_token").toString
+        token = "Bearer " + token.replaceAll("\"", "")
+
+        val user = getCurrentUser(token)
+        val j = Json.parse(user)
+        val jsarray = j \ "users"
+        val personId = (jsarray(0) \ "personId").toString().replace("\"", "")
+        val displayName = (jsarray(0) \ "displayName").toString().replace("\"", "")
+        Ok(views.html.menu(token, personId))
+    }
+
+
   }
 
   def getCurrentUser(token: String) = {
