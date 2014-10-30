@@ -84,7 +84,7 @@ object Application extends Controller {
       (0 to allButLastName.length - 2).foreach(index => {
         val part = allButLastName(index)
         val count = nameMap.get(part.toUpperCase)
-        if (part != "" && part.length > 1 && !excludedNames.contains(part.toLowerCase()))
+        if (part != "" && part.length > 2 && !excludedNames.contains(part.toLowerCase()))
         count match {
           case Some(x) => nameMap = nameMap + (part.toUpperCase() -> (nameMap.get(part.toUpperCase()).get + 5))
           case _ => nameMap = nameMap + (part.toUpperCase() -> 5)
@@ -122,18 +122,6 @@ object Application extends Controller {
         json = json + "{name:\"" + p._1 + "\",size:10},"
       })
     } while(nameCount < 150)
-  /*  nameMap.foreach(p => {
-      json = json + "{name:\"" + p._1 + "\",size:5},"
-    })
-    nameMap.foreach(p => {
-      json = json + "{name:\"" + p._1 + "\",size:5},"
-    })
-    nameMap.foreach(p => {
-      json = json + "{name:\"" + p._1 + "\",size:5},"
-    })
-    nameMap.foreach(p => {
-      json = json + "{name:\"" + p._1 + "\",size:5},"
-    })*/
 
     json = json.substring(0,json.length-1)
     json = json + "]"

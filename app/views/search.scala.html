@@ -10,6 +10,7 @@
         <script src="@routes.Assets.at("javascripts/jquery-1.11.1.min.js")" type="text/javascript"></script>
         <script>
             $(function () {
+                $('.progress').hide();
                $('#get-cousins-button').click(function() {
                    $('.progress').show();
                    $('#get-cousins-button').attr("disabled","disabled");
@@ -24,7 +25,7 @@
             <span class='header-text'>GenusTree Search</span><img id='header-logo' src="@routes.Assets.at("images/tree.gif")"/>
         </div>
         <div id='main-panel'>
-            <div class="progress" style='display:none;'>
+            <div class="progress" >
                 <div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
             </div>
             <form id='get-cousins-form' action='/getCousins' method='POST'>
