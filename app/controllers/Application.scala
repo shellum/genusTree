@@ -117,9 +117,9 @@ object Application extends Controller {
 
     if (nameCount < 100)
     do {
-      nameMap.foreach(p => {
+      sortedSimpleList.foreach(p => {
         nameCount = nameCount + 1
-        json = json + "{name:\"" + p._1 + "\",size:10},"
+        json = json + "{name:\"" + p.name + "\",size:10},"
       })
     } while(nameCount < 150)
 
