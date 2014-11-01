@@ -1,4 +1,4 @@
-@(token: String, personId: String)
+@(token: String, personId: String, nameList: String)
 <!DOCTYPE html>
 <html>
     <head>
@@ -8,16 +8,90 @@
         <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
         <link rel="stylesheet" media="screen and (max-width: 600px)" href="@routes.Assets.at("stylesheets/main-small.css")">
         <script src="@routes.Assets.at("javascripts/jquery-1.11.1.min.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.at("javascripts/bootstrap.min.js")" type="text/javascript"></script>
+        <style>
+
+        .typeahead, .tt-query, .tt-hint {
+            border: 2px solid #CCCCCC;
+            border-radius: 8px;
+            font-size: 24px;
+            height: 30px;
+            line-height: 30px;
+            outline: medium none;
+            padding: 8px 12px;
+            width: 396px;
+        }
+        .typeahead {
+            background-color: #FFFFFF;
+        }
+        .typeahead:focus {
+            border: 2px solid #0097CF;
+        }
+        .tt-query {
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
+        }
+        .tt-hint {
+            color: #999999;
+        }
+        .tt-dropdown-menu {
+            background-color: #FFFFFF;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+            margin-top: 12px;
+            padding: 8px 0;
+            width: 422px;
+        }
+        .tt-suggestion {
+            font-size: 24px;
+            line-height: 24px;
+            padding: 3px 20px;
+        }
+        .tt-suggestion.tt-is-under-cursor {
+            background-color: #0097CF;
+            color: #FFFFFF;
+        }
+        .tt-suggestion p {
+            margin: 0;
+        }</style>
         <script>
+            var nameList = @Html(nameList);
+
             $(function () {
                 $('.progress').hide();
-               $('#get-cousins-button').click(function() {
-                   $('.progress').show();
-                   $('#get-cousins-button').attr("disabled","disabled");
-                   $('#get-cousins-form').attr('action', $('#action').val());
-                   $('#get-cousins-form').submit();
-               })
+                $('#get-cousins-button').click(function () {
+                    $('.progress').show();
+                    $('#get-cousins-button').attr("disabled", "disabled");
+                    $('#get-cousins-form').attr('action', $('#action').val());
+                    $('#get-cousins-form').submit();
+                });
+
+                var names = new Bloodhound({
+                    datumTokenizer: function (d) {
+                        return Bloodhound.tokenizers.whitespace(d.name);
+                    },
+                    queryTokenizer: Bloodhound.tokenizers.whitespace,
+                    local: nameList
+                });
+
+                names.initialize();
+                var nameTypeAhead = $('#name');
+
+                nameTypeAhead.typeahead({
+                    highlight: true
+                }, {
+                    name: 'name',
+                    displayKey: 'name',
+                    source: names.ttAdapter()
+                });
+
+                var selectedHandler = function (eventObject, suggestionObject, suggestionDataset) {
+                    $('#pid').val(suggestionObject.pid);
+                };
+
+                nameTypeAhead.on('typeahead:selected', selectedHandler);
             });
+
         </script>
     </head>
     <body>
@@ -39,7 +113,11 @@
                 <input type='hidden' name='token' value='@token'/>
                 <div class="form-element field-width">
                     FamilySearch ID for starting point (default is you):
-                    <input type='text' class="form-control" name='pid' value='@personId'/>
+                    <input type='text' class="form-control typeahead tt-query" spellcheck="false" id='pid' name='pid' value='@personId'/>
+                </div>
+                <div class="form-element field-width">
+                    Search for a relative (default is you):
+                    <input type='text' class="form-control typeahead tt-query" autocomplete="off" spellcheck="false" id='name' name='name' value=''/>
                 </div>
                 <div class="form-element">
                     <input type='button' id='get-cousins-button' class="btn btn-success" value='Search!'/>

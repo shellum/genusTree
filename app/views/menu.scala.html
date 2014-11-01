@@ -1,4 +1,4 @@
-@(token: String, personId: String)
+@(token: String, personId: String, json: String)
 <!DOCTYPE html>
 <html>
     <head>
@@ -13,11 +13,11 @@
                $('#get-cousins-form').click(function() {
                    $('#get-cousins-button').attr("disabled","disabled");
                    $('#get-cousins-form').submit();
-               })
+               });
                 $('#name-cloud-form').click(function() {
                     $('#name-cloud-button').attr("disabled","disabled");
                     $('#name-cloud-form').submit();
-                })
+                });
             });
         </script>
     </head>
@@ -30,12 +30,14 @@
                 <img id='get-cousins-image' style='cursor: pointer; cursor: hand;' src="@routes.Assets.at("images/MenuRelativeList.png")"/>
                 <input type='hidden' name='token' value='@token'/>
                 <input type='hidden' name='pid' value='@personId'/>
+                <input type='hidden' name='nameList' value='@Html(json)'/>
                 <input type='button' id='get-cousins-button' class="btn btn-success center-block padded-button" value='See Single Generation'/>
             </form>
             <form id='name-cloud-form' style='float:left;margin:10px' action='/nameCloudDetails' method='POST'>
                 <img id='name-cloud-image' style='cursor: pointer; cursor: hand;' src="@routes.Assets.at("images/MenuNameCloud.png")"/>
                 <input type='hidden' name='token' value='@token'/>
                 <input type='hidden' name='pid' value='@personId'/>
+                <input type='hidden' name='nameList' value='@Html(json)'/>
                 <input type='button' id='name-cloud-button' class="btn btn-success center-block padded-button" value='Name Cloud'/>
             </form>
         </div>
