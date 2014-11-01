@@ -111,8 +111,11 @@ object Application extends Controller {
 
     sortedSimpleList.foreach(p=> {
       nameCount = nameCount + 1
-      if (nameCount < 100)
-      json = json + "{name:\"" + p.name + "\",size:"+((p.count * 40) / maxSize)+"},"
+      if (nameCount < 100) {
+        var nameSize = ((p.count * 40) / maxSize)
+        if (nameSize < 10) nameSize = 10
+        json = json + "{name:\"" + p.name + "\",size:" + nameSize + "},"
+      }
     })
 
     if (nameCount < 100)

@@ -26,8 +26,6 @@
             <span class='header-text'>GenusTree Menu</span><img id='header-logo' src="@routes.Assets.at("images/tree.gif")"/>
         </div>
         <div id='main-panel'>
-            <h2>*GenusTree does not know about living family members that you have not manually added to your FamilySearch tree.</h2>
-            <br>
             <form id='get-cousins-form' style='float:left;margin:10px' action='/search' method='POST'>
                 <img id='get-cousins-image' style='cursor: pointer; cursor: hand;' src="@routes.Assets.at("images/MenuRelativeList.png")"/>
                 <input type='hidden' name='token' value='@token'/>

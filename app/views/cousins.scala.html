@@ -24,6 +24,8 @@
             @import java.math.BigInteger; var i=0
             @if(numPeople == 0) {
                 No @title were found.
+                <br>
+                GenusTree does not know about living family members that you have not manually added to your FamilySearch tree.
             }
             <ul id='person-list' class="list-group" style="float:left">
                 @for((p) <- peopleSet) {

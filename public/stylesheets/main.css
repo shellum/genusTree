@@ -29,14 +29,12 @@
 }
 
 .form-element {
-    width: 50%;
     text-align: left;
-    margin: 10px;
+    padding:10px 0px 0px 10px;
 }
 
-.left {
-    text-align: left;
-    margin: 10px;
+.field-width {
+    width: 50%;
 }
 
 .padded-button {
