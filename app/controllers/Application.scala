@@ -34,7 +34,10 @@ object Application extends Controller {
     //Walk up the tree
     //Start with self
     var parents: List[Person] = List(Person("doesn't matter", pid, "", None))
-    (1 to generations - 1).foreach(p => parents = parents.foldLeft(List[Person]())((acc, item) => getParents(token, item) ::: acc))
+    (1 to generations - 1).foreach(p => {
+      parents = parents.foldLeft(List[Person]())((acc, item) => getParents(token, item).distinct ::: acc)
+      parents = parents.distinct
+    })
 
 
 
@@ -52,7 +55,7 @@ object Application extends Controller {
       parents.foreach((item) => {
         auntUncleFutures = future {
           System.out.println("in x")
-          getChildren(token, item.pid, item)
+          getChildren(token, item.pid, item).distinct
         } :: auntUncleFutures
       })
 
@@ -65,14 +68,18 @@ object Application extends Controller {
         })
       }
       Await.result(allAuntUncleFutures, Duration(50, TimeUnit.SECONDS))
-      parents = nextGenToFollow
+      parents = nextGenToFollow.distinct
       System.out.println("done with going down one generation")
     })
 
     allPeople
   }
 
-  def getNameList(generations: Int, pid: String, token: String) = {
+  def getNameList() = Action { implicit request =>
+    val token = nameCloudForm.bindFromRequest.get.token
+    val pid = nameCloudForm.bindFromRequest.get.pid
+    val generations = nameCloudForm.bindFromRequest.get.generations
+
     var allPeople = getAllPeople(generations, pid, token)
     var json = "["
     allPeople.distinct.foreach(p => {
@@ -80,7 +87,7 @@ object Application extends Controller {
     })
     json = json.substring(0, json.length - 1)
     json = json + "]"
-    json
+    Ok(json).as(TEXT)
   }
 
   def nameCloud = Action { implicit request =>
@@ -129,7 +136,7 @@ object Application extends Controller {
     sortedSimpleList.foreach(p => {
       nameCount = nameCount + 1
       if (nameCount < 100) {
-        var nameSize = ((p.count * 40) / maxSize)
+        var nameSize = ((p.count * 30) / maxSize)
         if (nameSize < 10) nameSize = 10
         json = json + "{name:\"" + p.name + "\",size:" + nameSize + "},"
       }
@@ -160,6 +167,15 @@ object Application extends Controller {
       Ok(views.html.search(token, pid, nameList))
     }
   }
+  def menu = Action {
+    implicit request => {
+      val token = userForm.bindFromRequest.get.token
+      val pid = userForm.bindFromRequest.get.pid
+      val nameList = userForm.bindFromRequest.get.nameList
+
+      Ok(views.html.menu(token, pid, nameList))
+    }
+  }
 
   def nameCloudDetails = Action {
     implicit request => {
@@ -182,7 +198,7 @@ object Application extends Controller {
       ret = response.body
     }
 
-    Await.result(future, Duration(5, java.util.concurrent.TimeUnit.SECONDS))
+    Await.result(future, Duration(10, java.util.concurrent.TimeUnit.SECONDS))
     val json = Json.parse(ret)
 
     (json \ "access_token").asOpt[String] match {
@@ -196,8 +212,7 @@ object Application extends Controller {
         val jsarray = j \ "users"
         val personId = (jsarray(0) \ "personId").toString().replace("\"", "")
         val displayName = (jsarray(0) \ "displayName").toString().replace("\"", "")
-        var nameList = getNameList(5, personId, token)
-        Ok(views.html.menu(token, personId, nameList))
+        Ok(views.html.loading(token, personId))
     }
 
 
@@ -287,8 +302,8 @@ object Application extends Controller {
   }
 
   def getAuntsUncles() = Action { implicit request =>
-    val token = userForm.bindFromRequest.get.token
-    val pid = userForm.bindFromRequest.get.pid
+    val token = baseUserForm.bindFromRequest.get.token
+    val pid = baseUserForm.bindFromRequest.get.pid
 
     val treeTuple = getCousinTree(token, pid)
     val grandparentSet = treeTuple._1

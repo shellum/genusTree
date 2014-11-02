@@ -6,4 +6,6 @@ POST    /getAuntsUncles             controllers.Application.getAuntsUncles
 POST    /nameCloud                  controllers.Application.nameCloud
 POST    /nameCloudDetails           controllers.Application.nameCloudDetails
 GET     /privacyPolicy              controllers.Application.privacyPolicy
+POST    /menu                       controllers.Application.menu
+POST    /getNameList                controllers.Application.getNameList
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
