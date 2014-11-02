@@ -34,13 +34,10 @@
                     <select name="generations" class="form-control">
                         <option value="3" selected="selected">3</option>
                         <option value="4">4</option>
-                        <option value="5">5</option>
+                        <option value="5">5 (takes 25 seconds.)</option>
                     </select>
                 </div>
-                <div class="form-element field-width">
-                    FamilySearch ID for starting point (default is you):
-                    <input type='text' class="form-control" name='pid' value='@personId'/>
-                </div>
+                <input type='hidden' class="form-control" name='pid' value='@personId'/>
                 <div class="form-element">
                     <input type='button' id='name-cloud-setup-button' class="btn btn-success" value='Search!'/>
                 </div>

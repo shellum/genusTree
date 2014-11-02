@@ -34,9 +34,24 @@ object Application extends Controller {
     //Walk up the tree
     //Start with self
     var parents: List[Person] = List(Person("doesn't matter", pid, "", None))
-    (1 to generations - 1).foreach(p => {
-      parents = parents.foldLeft(List[Person]())((acc, item) => getParents(token, item).distinct ::: acc)
-      parents = parents.distinct
+    (1 to generations - 1).foreach(generation => {
+      System.out.println("getting a generation's parents")
+      var nextGenToFollow = List[Person]()
+      var parentsFutures = List[Future[List[Person]]]()
+      parents.foreach(parent => {
+        parentsFutures = future {
+          getParents(token, parent).distinct
+        } :: parentsFutures
+      })
+
+      val allParentFutures = Future.sequence(parentsFutures).map {
+        currentFutures => currentFutures.foreach(parentList => {
+          //parentList.foreach(p=>System.out.println("\tParent("+generation+"): "+p.name))
+          nextGenToFollow = parentList ::: nextGenToFollow
+        })
+      }
+      Await.result(allParentFutures, Duration(50,TimeUnit.SECONDS))
+      parents = nextGenToFollow.distinct
     })
 
 
@@ -51,18 +66,17 @@ object Application extends Controller {
       var nextGenToFollow = List[Person]()
       //Go down one generation
       var auntUncleFutures = List[Future[List[Person]]]()
-      System.out.println("About to spawn " + parents.size)
+      //System.out.println("About to spawn " + parents.size)
       parents.foreach((item) => {
         auntUncleFutures = future {
-          System.out.println("in x")
+          //System.out.println("in x")
           getChildren(token, item.pid, item).distinct
         } :: auntUncleFutures
       })
 
       val allAuntUncleFutures = Future.sequence(auntUncleFutures).map {
         lst => lst.foreach(l => allPeople = {
-          l.foreach(pp =>
-            System.out.println(pp.name))
+          //l.foreach(pp => System.out.println(pp.name))
           nextGenToFollow = l ::: nextGenToFollow
           allPeople ::: l
         })
@@ -137,7 +151,7 @@ object Application extends Controller {
       nameCount = nameCount + 1
       if (nameCount < 100) {
         var nameSize = ((p.count * 30) / maxSize)
-        if (nameSize < 10) nameSize = 10
+        if (nameSize < 12) nameSize = 12
         json = json + "{name:\"" + p.name + "\",size:" + nameSize + "},"
       }
     })
@@ -360,7 +374,7 @@ object Application extends Controller {
     var matchedAuntUncle: Person = null
     auntUncleList.foreach(auntUncle => {
       if (auntUncle.pid == cousin.parent.get.pid) {
-        System.out.println("matched:" + auntUncle.name + " with " + cousin.name)
+        //System.out.println("matched:" + auntUncle.name + " with " + cousin.name)
         matchedAuntUncle = auntUncle
       }
     })

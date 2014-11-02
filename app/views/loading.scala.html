@@ -10,7 +10,6 @@
         <script src="@routes.Assets.at("javascripts/jquery-1.11.1.min.js")" type="text/javascript"></script>
         <script>
             $(function () {
-                debugger;
                $.post( "/getNameList", $( "#get-name-list-form" ).serialize()).done(function(  data) {
                    $('#nameList').val(data);
                    $('#get-menu-form').submit();
@@ -23,7 +22,8 @@
             <span class='header-text'>GenusTree Loading...</span><img id='header-logo' src="@routes.Assets.at("images/tree.gif")"/>
         </div>
         <div id='main-panel'>
-            <button class="btn btn-lg btn-warning"><span class="g"></span>Loading...</button>
+            <br>
+            <button class="btn btn-lg btn-success" style="padding:10px;"><img src="@routes.Assets.at("images/animatedSpinner.gif")"/> Loading...</button>
             <form id='get-name-list-form'>
                 <input type='hidden' name='token' value='@token'/>
                 <input type='hidden' name='pid' value='@personId'/>
