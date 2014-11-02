@@ -50,7 +50,7 @@ object Application extends Controller {
           nextGenToFollow = parentList ::: nextGenToFollow
         })
       }
-      Await.result(allParentFutures, Duration(50,TimeUnit.SECONDS))
+      Await.result(allParentFutures, Duration(90,TimeUnit.SECONDS))
       parents = nextGenToFollow.distinct
     })
 
@@ -81,7 +81,7 @@ object Application extends Controller {
           allPeople ::: l
         })
       }
-      Await.result(allAuntUncleFutures, Duration(50, TimeUnit.SECONDS))
+      Await.result(allAuntUncleFutures, Duration(90, TimeUnit.SECONDS))
       parents = nextGenToFollow.distinct
       System.out.println("done with going down one generation")
     })
@@ -212,7 +212,7 @@ object Application extends Controller {
       ret = response.body
     }
 
-    Await.result(future, Duration(10, java.util.concurrent.TimeUnit.SECONDS))
+    Await.result(future, Duration(30, java.util.concurrent.TimeUnit.SECONDS))
     val json = Json.parse(ret)
 
     (json \ "access_token").asOpt[String] match {
@@ -240,7 +240,7 @@ object Application extends Controller {
       ret = response.body
     }
 
-    Await.result(future, Duration(25, java.util.concurrent.TimeUnit.SECONDS))
+    Await.result(future, Duration(90, java.util.concurrent.TimeUnit.SECONDS))
     ret
   }
 
@@ -265,7 +265,7 @@ object Application extends Controller {
     val allAuntUncleFutures = Future.sequence(auntUncleFutures).map {
       lst => lst.foreach(l => grandparentSet.addDescendants(l))
     }
-    Await.result(allAuntUncleFutures, Duration(50, TimeUnit.SECONDS))
+    Await.result(allAuntUncleFutures, Duration(90, TimeUnit.SECONDS))
 
     // Get cousins
     var cousinFutures = List[Future[List[Person]]]()
@@ -303,7 +303,7 @@ object Application extends Controller {
       }
     }
 
-    Await.result(allCousinFutures, Duration(50, TimeUnit.SECONDS))
+    Await.result(allCousinFutures, Duration(90, TimeUnit.SECONDS))
 
     val cousinList = allCousins.foldLeft(List[Person]())((acc, item) => {
       if (item.pid != pid)
@@ -402,7 +402,7 @@ object Application extends Controller {
           })
       }
     }
-    Await.result(future, Duration(50, java.util.concurrent.TimeUnit.SECONDS))
+    Await.result(future, Duration(90, java.util.concurrent.TimeUnit.SECONDS))
     ret
   }
 
@@ -432,7 +432,7 @@ object Application extends Controller {
           })
       }
     }
-    Await.result(future, Duration(50, java.util.concurrent.TimeUnit.SECONDS))
+    Await.result(future, Duration(90, java.util.concurrent.TimeUnit.SECONDS))
     ret
   }
 
@@ -460,7 +460,7 @@ object Application extends Controller {
           })
       }
     }
-    Await.result(future, Duration(50, java.util.concurrent.TimeUnit.SECONDS))
+    Await.result(future, Duration(90, java.util.concurrent.TimeUnit.SECONDS))
     ret
   }
 
