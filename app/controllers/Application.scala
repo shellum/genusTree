@@ -10,6 +10,7 @@ import play.api.libs.json.{JsObject, Json}
 import play.api.libs.ws.WS
 import play.api.mvc._
 
+import scala.collection.SortedMap
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import scala.concurrent.duration.Duration
@@ -115,13 +116,23 @@ object Application extends Controller {
     val grandparentSet = Person("Grandparent Set", "", "", None, false)
     var allPeople = getAllPeople(generations, pid, token)
 
+
+    var partToNamesMap = Map[String, List[String]]()
+
     var json = "["
     var nameMap = Map[String, Int]()
     allPeople.distinct.foreach(p => {
       val allButLastName = p.name.split(" ")
       (0 to allButLastName.length - 2).foreach(index => {
         val part = allButLastName(index)
-        val count = nameMap.get(part.toUpperCase)
+        val upperCasePart = part.toUpperCase()
+        val count = nameMap.get(upperCasePart)
+
+        partToNamesMap.get(upperCasePart) match {
+          case Some(x) => partToNamesMap += upperCasePart -> ((p.name + " " + p.pid) :: x)
+          case _ => partToNamesMap += upperCasePart -> List(p.name + " " + p.pid)
+        }
+
         if (part != "" && part.length > 2 && !excludedNames.contains(part.toLowerCase()))
           count match {
             case Some(x) => nameMap = nameMap + (part.toUpperCase() -> (nameMap.get(part.toUpperCase()).get + 5))
@@ -151,7 +162,7 @@ object Application extends Controller {
       nameCount = nameCount + 1
       if (nameCount < 100) {
         var nameSize = ((p.count * 30) / maxSize)
-        if (nameSize < 12) nameSize = 12
+        if (nameSize < 9) nameSize = 9
         json = json + "{name:\"" + p.name + "\",size:" + nameSize + "},"
       }
     })
@@ -167,7 +178,8 @@ object Application extends Controller {
     json = json.substring(0, json.length - 1)
     json = json + "]"
 
-    Ok(views.html.namecloud(json))
+    val sortedPartToNamesMap = partToNamesMap.toList.sortBy(_._2.size).reverse
+    Ok(views.html.namecloud(json, sortedPartToNamesMap))
   }
 
   def excludedNames = List("stillborn", "stilborn", "still", "mr.", "mr", "miss", "miss.", "mrs", "mrs.")
@@ -250,7 +262,21 @@ object Application extends Controller {
 
     //Walk up the tree
     val parents: List[Person] = getParents(token, Person("doesn't matter", pid, "", None))
-    val grandparents = parents.foldLeft(List[Person]())((acc, item) => getParents(token, item) ::: acc)
+    var grandparents = List[Person]()
+    var parentsFutures = List[Future[List[Person]]]()
+    parents.foreach(parent => {
+      parentsFutures = future {
+        getParents(token, parent).distinct
+      } :: parentsFutures
+    })
+
+    val allParentFutures = Future.sequence(parentsFutures).map {
+      currentFutures => currentFutures.foreach(parentList => {
+        //parentList.foreach(p=>System.out.println("\tParent("+generation+"): "+p.name))
+        grandparents = parentList ::: grandparents
+      })
+    }
+    Await.result(allParentFutures, Duration(90,TimeUnit.SECONDS))
 
     //Walk back down the tree
 
