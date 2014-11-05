@@ -1,4 +1,4 @@
-@(json: String, sortedPartToNamesMap: List[(String, List[String])], font: String)
+@(json: String, sortedPartToNamesMap: List[(String, List[String])], font: String, colorScheme: ColorScheme)
 <!DOCTYPE html>
 <html>
 <head>
@@ -18,9 +18,9 @@
             var height = $('#canvas').attr('height').replace('px','');
             $('main-panel').css('background',0);
             context.rect(0,0,width,height);
-            context.fillStyle="white";
+            context.fillStyle="@colorScheme.backgroundColor";
             context.fill();
-            drawTree(@Html(json), '@font');
+            drawTree(@Html(json), '@font', @Html(colorScheme.foregroundColors), '@Html(colorScheme.backgroundColor)', @Html(colorScheme.colorFun));
         });
     </script>
 </head>

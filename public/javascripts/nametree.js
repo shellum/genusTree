@@ -1,34 +1,7 @@
 var context;
 var canvas;
 var taken = [];
-function drawTree(words, font) {
-    var colors = ["#7D8A2E",
-        "#C9D787",
-        "#7E8AA2",
-        "#D8CAA8",
-        "#284907",
-        "#382513",
-        "#468966",
-        "#5C832F",
-        "#FFB03B",
-        "#363942",
-        "#B64926",
-        "#8E2800",
-        "#263248",
-        "#FF9800",
-        "#FFC0A9",
-        "#69D2E7",
-        "#A7DBD8",
-        "#E0E4CC",
-        "#F38630",
-        "#FA6900",
-        "#FC9D9A",
-        "#F9CDAD",
-        "#C8C8A9",
-        "#83AF9B",
-        "#556270",
-        "#C7F464",
-        'CornflowerBlue', 'Crimson', 'DarkOrange', 'DarkOrchid', 'DarkTurquoise', 'Fuchsia', 'Gold', 'HotPink', 'LightSeaGreen', 'SteelBlue'];
+function drawTree(words, font, foregroundColors, backgroundColor, colorFun) {
 
     canvas = document.getElementById('canvas');
     context = canvas.getContext('2d');
@@ -37,8 +10,8 @@ function drawTree(words, font) {
     var sz = 40;
     var scale = 1.2;
     context.font = sz + 'pt '+font;
-    context.fillStyle = "#ffffff";
-    context.strokeStyle = "#ffffff";
+    context.fillStyle = backgroundColor;
+    context.strokeStyle = backgroundColor;
     context.lineWidth = 3;
     context.lineCap = "round";
     context.lineJoin = "round";
@@ -130,15 +103,14 @@ function drawTree(words, font) {
         words.forEach(function (w) {
             console.log(g + '/' + words.length);
             g++;
-            context.fillStyle = colors[(Math.floor(Math.random() * 100 % colors.length))];
             if (w.size > 10) w.size = w.size * 1.5
-            placeText(w.name.toUpperCase(), w.size,font);
+            placeText(w.name.toUpperCase(), w.size,font, colorFun);
         });
     }
 
 };
 
-function placeText(text, sz,font) {
+function placeText(text, sz,font, colorFun) {
     if (text == 'NELSON')
     text = 'NELSON';
     context.font = sz + 'pt '+font;
@@ -192,10 +164,13 @@ function placeText(text, sz,font) {
 
     } while (xdelta + centerCoord > -100 && (canput == false || !context.isPointInPath(precalcxdelta + cwidth, precalcydelta) || !context.isPointInPath(precalcxdelta, precalcydelta) || !context.isPointInPath(precalcxdelta + cwidth, precalcydelta - cheight) || !context.isPointInPath(precalcxdelta, precalcydelta - cheight)
         ));
-    if (text == 'NELSON')
-        text = 'NELSON';
+
     if (xdelta + 200 > 0) {
         taken.push({x: xdelta, y: ydelta, width: cwidth, height: cheight, txt: text});
+        if (colorFun == null)
+            context.fillStyle = foregroundColors[(Math.floor(Math.random() * 100 % foregroundColors.length))];
+        else
+            context.fillStyle = colorFun(xdelta, ydelta);
         context.fillText(text, precalcxdelta, precalcydelta);
     }
 }

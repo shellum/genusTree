@@ -2,7 +2,7 @@ package controllers
 
 import java.util.concurrent.TimeUnit
 
-import models.{Person, SimplePerson}
+import models.{ColorScheme, Person, SimplePerson}
 import org.apache.commons.lang3.{StringEscapeUtils, StringUtils}
 import play.api.Play
 import play.api.data.Forms._
@@ -111,6 +111,7 @@ object Application extends Controller {
     val pid = nameCloudForm.bindFromRequest.get.pid
     val generations = nameCloudForm.bindFromRequest.get.generations
     val unsanitizedFont = nameCloudForm.bindFromRequest.get.font
+    val colorScheme = ColorScheme(nameCloudForm.bindFromRequest.get.colorScheme)
 
     val font = StringEscapeUtils.escapeHtml4(StringEscapeUtils.escapeEcmaScript(unsanitizedFont))
 
@@ -166,7 +167,8 @@ object Application extends Controller {
       nameCount = nameCount + 1
       //if (nameCount < 100) {
         var nameSize = ((p.count * 35) / maxSize)
-        if (nameSize < 12) nameSize = 12
+        val smallestSize = 13 - (sortedSimpleList.size / 100)
+        if (nameSize < smallestSize) nameSize = smallestSize
         json = json + "{name:\"" + p.name + "\",size:" + nameSize + "},"
       //}
     })
@@ -183,7 +185,7 @@ object Application extends Controller {
     json = json + "]"
 
     val sortedPartToNamesMap = partToNamesMap.toList.sortBy(_._2.size).reverse
-    Ok(views.html.namecloud(json, sortedPartToNamesMap, font))
+    Ok(views.html.namecloud(json, sortedPartToNamesMap, font, colorScheme))
   }
 
   def excludedNames = List("stillborn", "stilborn", "still", "mr.", "mr", "miss", "miss.", "mrs", "mrs.")
@@ -513,7 +515,8 @@ object Application extends Controller {
       "token" -> text,
       "pid" -> text,
       "generations" -> number,
-      "font" -> text
+      "font" -> text,
+      "colorScheme" -> number
     )(NameCloudParams.apply)(NameCloudParams.unapply)
   )
   val nameListForm = Form(
@@ -531,4 +534,4 @@ case class BaseForm(token: String, pid: String)
 case class Cousins(token: String, pid: String, nameList: String)
 
 case class NameListForm(token: String, pid: String, generations: Int)
-case class NameCloudParams(token: String, pid: String, generations: Int, font: String)
+case class NameCloudParams(token: String, pid: String, generations: Int, font: String, colorScheme: Int)
