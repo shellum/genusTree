@@ -104,13 +104,13 @@ function drawTree(words, font, foregroundColors, backgroundColor, colorFun) {
             console.log(g + '/' + words.length);
             g++;
             if (w.size > 10) w.size = w.size * 1.5
-            placeText(w.name.toUpperCase(), w.size,font, colorFun);
+            placeText(w.name.toUpperCase(), w.size,font, foregroundColors, backgroundColor, colorFun);
         });
     }
 
 };
 
-function placeText(text, sz,font, colorFun) {
+function placeText(text, sz,font, foregroundColors, backgroundColor, colorFun) {
     if (text == 'NELSON')
     text = 'NELSON';
     context.font = sz + 'pt '+font;
