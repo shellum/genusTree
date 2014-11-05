@@ -1,4 +1,4 @@
-@(json: String, sortedPartToNamesMap: List[(String, List[String])])
+@(json: String, sortedPartToNamesMap: List[(String, List[String])], font: String)
 <!DOCTYPE html>
 <html>
 <head>
@@ -20,7 +20,7 @@
             context.rect(0,0,width,height);
             context.fillStyle="white";
             context.fill();
-            drawTree(@Html(json));
+            drawTree(@Html(json), '@font');
         });
     </script>
 </head>

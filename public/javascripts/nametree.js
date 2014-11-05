@@ -1,7 +1,7 @@
 var context;
 var canvas;
 var taken = [];
-function drawTree(words) {
+function drawTree(words, font) {
     var colors = ["#7D8A2E",
         "#C9D787",
         "#7E8AA2",
@@ -36,7 +36,7 @@ function drawTree(words) {
     var rr = 500;
     var sz = 40;
     var scale = 1.2;
-    context.font = sz + 'pt Calibri';
+    context.font = sz + 'pt '+font;
     context.fillStyle = "#ffffff";
     context.strokeStyle = "#ffffff";
     context.lineWidth = 3;
@@ -132,16 +132,16 @@ function drawTree(words) {
             g++;
             context.fillStyle = colors[(Math.floor(Math.random() * 100 % colors.length))];
             if (w.size > 10) w.size = w.size * 1.5
-            placeText(w.name.toUpperCase(), w.size);
+            placeText(w.name.toUpperCase(), w.size,font);
         });
     }
 
 };
 
-function placeText(text, sz) {
+function placeText(text, sz,font) {
     if (text == 'NELSON')
     text = 'NELSON';
-    context.font = sz + 'pt Calibri';
+    context.font = sz + 'pt '+font;
     var cwidth = context.measureText(text).width;
     var cheight = sz;
     var x = 100;

@@ -3,6 +3,7 @@ package controllers
 import java.util.concurrent.TimeUnit
 
 import models.{Person, SimplePerson}
+import org.apache.commons.lang3.{StringEscapeUtils, StringUtils}
 import play.api.Play
 import play.api.data.Forms._
 import play.api.data._
@@ -91,9 +92,9 @@ object Application extends Controller {
   }
 
   def getNameList() = Action { implicit request =>
-    val token = nameCloudForm.bindFromRequest.get.token
-    val pid = nameCloudForm.bindFromRequest.get.pid
-    val generations = nameCloudForm.bindFromRequest.get.generations
+    val token = nameListForm.bindFromRequest.get.token
+    val pid = nameListForm.bindFromRequest.get.pid
+    val generations = nameListForm.bindFromRequest.get.generations
 
     var allPeople = getAllPeople(generations, pid, token)
     var json = "["
@@ -109,6 +110,9 @@ object Application extends Controller {
     val token = nameCloudForm.bindFromRequest.get.token
     val pid = nameCloudForm.bindFromRequest.get.pid
     val generations = nameCloudForm.bindFromRequest.get.generations
+    val unsanitizedFont = nameCloudForm.bindFromRequest.get.font
+
+    val font = StringEscapeUtils.escapeHtml4(StringEscapeUtils.escapeEcmaScript(unsanitizedFont))
 
     // var allPeople = List[Person]()
 
@@ -161,8 +165,8 @@ object Application extends Controller {
     sortedSimpleList.foreach(p => {
       nameCount = nameCount + 1
       //if (nameCount < 100) {
-        var nameSize = ((p.count * 30) / maxSize)
-        if (nameSize < 9) nameSize = 9
+        var nameSize = ((p.count * 35) / maxSize)
+        if (nameSize < 12) nameSize = 12
         json = json + "{name:\"" + p.name + "\",size:" + nameSize + "},"
       //}
     })
@@ -179,7 +183,7 @@ object Application extends Controller {
     json = json + "]"
 
     val sortedPartToNamesMap = partToNamesMap.toList.sortBy(_._2.size).reverse
-    Ok(views.html.namecloud(json, sortedPartToNamesMap))
+    Ok(views.html.namecloud(json, sortedPartToNamesMap, font))
   }
 
   def excludedNames = List("stillborn", "stilborn", "still", "mr.", "mr", "miss", "miss.", "mrs", "mrs.")
@@ -508,8 +512,16 @@ object Application extends Controller {
     mapping(
       "token" -> text,
       "pid" -> text,
-      "generations" -> number
+      "generations" -> number,
+      "font" -> text
     )(NameCloudParams.apply)(NameCloudParams.unapply)
+  )
+  val nameListForm = Form(
+    mapping(
+      "token" -> text,
+      "pid" -> text,
+      "generations" -> number
+    )(NameListForm.apply)(NameListForm.unapply)
   )
 
 }
@@ -518,4 +530,5 @@ case class BaseForm(token: String, pid: String)
 
 case class Cousins(token: String, pid: String, nameList: String)
 
-case class NameCloudParams(token: String, pid: String, generations: Int)
+case class NameListForm(token: String, pid: String, generations: Int)
+case class NameCloudParams(token: String, pid: String, generations: Int, font: String)
