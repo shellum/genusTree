@@ -1,11 +1,14 @@
-GET     /                           controllers.Application.index
-GET     /oauth/token                controllers.Application.processToken
-POST    /search                     controllers.Application.search
-POST    /getCousins                 controllers.Application.getCousins
-POST    /getAuntsUncles             controllers.Application.getAuntsUncles
-POST    /nameCloud                  controllers.Application.nameCloud
-POST    /nameCloudDetails           controllers.Application.nameCloudDetails
-GET     /privacyPolicy              controllers.Application.privacyPolicy
-POST    /menu                       controllers.Application.menu
-POST    /getNameList                controllers.Application.getNameList
+GET     /                           controllers.Auth.index
+GET     /oauth/token                controllers.Auth.processToken
+GET     /privacyPolicy              controllers.Auth.privacyPolicy
+POST    /menu                       controllers.Auth.menu
+POST    /getNameList                controllers.Auth.getNameList
+
+POST    /search                     controllers.SingleGeneration.search
+POST    /getCousins                 controllers.SingleGeneration.getCousins
+POST    /getAuntsUncles             controllers.SingleGeneration.getAuntsUncles
+
+POST    /nameCloud                  controllers.NameCloud.nameCloud
+POST    /nameCloudDetails           controllers.NameCloud.nameCloudDetails
+
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
