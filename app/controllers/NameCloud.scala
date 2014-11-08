@@ -61,7 +61,7 @@ object NameCloud extends Controller {
 
     sortedSimpleList.foreach(p => {
       nameCount = nameCount + 1
-      var nameSize = ((p.count * (70 - ((10-generations)*3))) / maxSize)
+      var nameSize = ((p.count * (65 - ((10-generations)*3))) / maxSize)
       //val smallestSize = 13 - (sortedSimpleList.size / 100)
       //if (nameSize < smallestSize) nameSize = smallestSize
       if (nameSize < 20 && nameSize > 10) nameSize -= 5
