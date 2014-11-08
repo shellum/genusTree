@@ -21,9 +21,10 @@
         <div id='header-panel'>
             <span class='header-text'>GenusTree Loading...</span><img id='header-logo' src="@routes.Assets.at("images/tree.gif")"/>
         </div>
-        <div id='main-panel'>
+        <div id='main-panel' style="background:0">
             <br>
-            <button class="btn btn-lg btn-success" style="padding:10px;"><img src="@routes.Assets.at("images/animatedSpinner.gif")"/> Loading...</button>
+            <img src="@routes.Assets.at("images/animatedSpinner.gif")"/><br>
+            <H2>Loading</H2>
             <form id='get-name-list-form'>
                 <input type='hidden' name='token' value='@token'/>
                 <input type='hidden' name='pid' value='@personId'/>
