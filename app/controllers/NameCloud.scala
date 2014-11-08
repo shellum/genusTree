@@ -66,6 +66,7 @@ object NameCloud extends Controller {
       //if (nameSize < smallestSize) nameSize = smallestSize
       if (nameSize < 20 && nameSize > 10) nameSize -= 5
       else if (nameSize < 10) nameSize = 10
+      if (nameCount < 150)
       json = json + "{name:\"" + p.name + "\",size:" + nameSize + "},"
     })
 
@@ -77,8 +78,8 @@ object NameCloud extends Controller {
         })
       } while (nameCount < 150)
 
-    var i = 50
-    if (sortedSimpleList.size < 50) i = sortedSimpleList.size - 1
+    var i = 30
+    if (sortedSimpleList.size-1 < 30) i = sortedSimpleList.size - 1
     (1 to i).foreach(i => {
       json = json + "{name:\"" + sortedSimpleList(i).name + "\",size:10},"
     })
