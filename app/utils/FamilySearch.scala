@@ -38,7 +38,7 @@ object FamilySearch {
             val id = (item \ "id").toString().replaceAll("\"", "")
             val name = (item \ "display" \ "name").toString().replaceAll("\"", "")
             val gender = (item \ "gender" \ "type").toString().replaceAll("\"", "").replace("http://gedcomx.org/", "")
-            val link = (item \ "links" \ "person" \ "href").toString().replaceAll("\"", "")
+            val link = (item \ "identifiers" \ "http://gedcomx.org/Persistent")(0).toString().replaceAll("\"", "")
             val firstName = ((item \ "names")(0))
             val firsts = (firstName \ "nameForms")(0)
             val fir = (firsts \ "parts")
@@ -74,7 +74,7 @@ object FamilySearch {
             var descendancyNumberStr = ""
             if (descendancyNumber != JsUndefined) descendancyNumberStr = descendancyNumber.toString().replaceAll("\"", "")
             val gender = (item \ "gender" \ "type").toString().replaceAll("\"", "").replace("http://gedcomx.org/", "")
-            val link = (item \ "links" \ "person" \ "href").toString().replaceAll("\"", "")
+            val link = "https://familysearch.org/ark:/61903/4:1:"+id
             val firstName = (item \ "names")(0)
             val firsts = (firstName \ "nameForms")(0)
             val fir = firsts \ "parts"

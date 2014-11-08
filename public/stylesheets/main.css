@@ -74,7 +74,13 @@
 
 #person-list {
     width: 350px;
+    cursor: pointer; cursor: hand;
 }
+#person-list-element {
+    color: #5555ee;
+
+}
+#person-list-element:hover { text-decoration: underline; }
 
 #main-panel-button {
 }

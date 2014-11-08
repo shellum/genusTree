@@ -1,7 +1,7 @@
 package controllers
 
 import controllers.Auth._
-import models.{ColorScheme, SimplePerson}
+import models.{Person, ColorScheme, SimplePerson}
 import org.apache.commons.lang3.StringEscapeUtils
 import play.api.data.Form
 import play.api.data.Forms._
@@ -20,7 +20,7 @@ object NameCloud extends Controller {
 
     val allPeople = FamilySearch.getAllPeople(generations, pid, token)
 
-    var partToNamesMap = Map[String, List[String]]()
+    var partToNamesMap = Map[String, List[Person]]()
 
     var json = "["
     var nameMap = Map[String, Int]()
@@ -32,8 +32,8 @@ object NameCloud extends Controller {
         val count = nameMap.get(upperCasePart)
 
         partToNamesMap.get(upperCasePart) match {
-          case Some(x) => partToNamesMap += upperCasePart -> ((p.name + " " + p.pid) :: x)
-          case _ => partToNamesMap += upperCasePart -> List(p.name + " " + p.pid)
+          case Some(x) => partToNamesMap += upperCasePart -> ((p) :: x)
+          case _ => partToNamesMap += upperCasePart -> List(p)
         }
 
         if (part != "" && part.length > 2 && !excludedNames.contains(part.toLowerCase()))
@@ -85,7 +85,7 @@ object NameCloud extends Controller {
     json = json + "]"
 
     val sortedPartToNamesMap = partToNamesMap.toList.sortBy(_._2.size).reverse
-    Ok(views.html.namecloud(json, sortedPartToNamesMap, font, colorScheme))
+    Ok(views.html.namecloud(json, sortedPartToNamesMap, font, colorScheme, token))
   }
 
   def nameCloudDetails = Action {

@@ -116,7 +116,7 @@ object SingleGeneration extends Controller {
     val auntUncleList = grandparentSet.getDescendants().filter(p => p.getDescendants().size == 0).sortBy(_.getName())
     val json = grandparentSet.toJson
 
-    Ok(views.html.cousins("Aunts & Uncles", auntUncleList.sorted, auntUncleList.size, json.toString()))
+    Ok(views.html.cousins("Aunts & Uncles", auntUncleList.sorted, auntUncleList.size, json.toString(),FamilySearch.FAMILYSEARCH_SERVER_URL,token))
   }
 
   def getCousins() = Action { implicit request =>
@@ -143,7 +143,7 @@ object SingleGeneration extends Controller {
 
     val json = gps.toJson
 
-    Ok(views.html.cousins("Cousins", cousinList.sorted, cousinList.size, json.toString()))
+    Ok(views.html.cousins("Cousins", cousinList.sorted, cousinList.size, json.toString(),FamilySearch.FAMILYSEARCH_SERVER_URL,token))
   }
 
   def getAuntUncleMatch(cousin: Person, auntUncleList: List[Person]): Person = {
