@@ -100,7 +100,7 @@ function drawTree(words, font, foregroundColors, backgroundColor, colorFun) {
         words.forEach(function (w) {
             console.log(g + '/' + words.length);
             g++;
-            setTimeout(function () {placeText(w.name.toUpperCase(), w.size,font, foregroundColors, backgroundColor, colorFun);},1);
+            setTimeout(function () {placeText(w.name.toUpperCase(), w.size,font, foregroundColors, backgroundColor, colorFun);},200);
         });
     }
 };
