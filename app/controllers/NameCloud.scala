@@ -7,7 +7,6 @@ import play.api.data.Form
 import play.api.data.Forms._
 import play.api.mvc.{Action, Controller}
 import utils.FamilySearch
-import scala.concurrent.ExecutionContext.Implicits.global
 
 object NameCloud extends Controller {
 
@@ -97,7 +96,6 @@ object NameCloud extends Controller {
       Ok(views.html.nameclouddetails(token, pid))
     }
   }
-
 
   def excludedNames = List("stillborn", "stilborn", "still", "mr.", "mr", "miss", "miss.", "mrs", "mrs.")
 

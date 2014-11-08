@@ -10,7 +10,6 @@
     <script src="@routes.Assets.at("javascripts/jquery-1.11.1.min.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/d3.min.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/nametree.js")"></script>
-
 </head>
     <body>
         <div id='header-panel'>
@@ -28,7 +27,6 @@
                 </li>
                 }
             </ul>
-
         </div>
         <div id='footer-panel'>
             <div id='footer-text'><a href="/privacyPolicy">Privacy Policy</a><a id='logout-link' href="/">Logout</a></div>
@@ -43,10 +41,9 @@
     context.rect(0,0,width,height);
     context.fillStyle="@colorScheme.backgroundColor";
     context.fill();
-    //$(function() {
     setTimeout(function() {
-    drawTree(@Html(json), '@font', @Html(colorScheme.foregroundColors), '@Html(colorScheme.backgroundColor)', @Html(colorScheme.colorFun))},10);
-    //});
+        drawTree(@Html(json), '@font', @Html(colorScheme.foregroundColors), '@Html(colorScheme.backgroundColor)', @Html(colorScheme.colorFun))
+    },10);
     </script>
     @analytics()
 </html>

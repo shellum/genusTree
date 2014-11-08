@@ -6,7 +6,6 @@ function drawTree(words, font, foregroundColors, backgroundColor, colorFun) {
     canvas = document.getElementById('canvas');
     context = canvas.getContext('2d');
 
-    var rr = 500;
     var sz = 40;
     var scale = 1.2;
     context.font = sz + 'pt '+font;
@@ -26,8 +25,6 @@ function drawTree(words, font, foregroundColors, backgroundColor, colorFun) {
     context.lineTo(scale*161.73525999999998,283.84880999999996*scale);
     context.lineTo(scale*144.46796999999998,296.11877*scale);
     context.lineTo(scale*100.46796999999998,310*scale);
- //   context.bezierCurveTo(scale*139.15454999999997,300.66326,136.94106999999997,305.22936999999996,128.52858999999998,309.75235*scale);
-   // context.bezierCurveTo(scale*120.11611999999998,314.27529999999996,111.70452999999998,317.90085,103.29205999999998,317.93228*scale);
     context.lineTo(scale*80.71125999999998,316.56955*scale);
     context.lineTo(scale*56.802379999999985,308.38873*scale);
     context.lineTo(scale*34.22184999999999,293.39239000000003*scale);
@@ -96,18 +93,16 @@ function drawTree(words, font, foregroundColors, backgroundColor, colorFun) {
     context.lineTo(scale*248.07260999999994,427.0000100000001*scale);
     context.lineTo(scale*168.37660999999994,427.0000100000001*scale);
     context.stroke();
-context.fillStyle='#ff0000';
+    context.fillStyle='#ff0000';
     var g = 0;
     for (u = 0; u < 1; u++) {
         console.log(u);
         words.forEach(function (w) {
             console.log(g + '/' + words.length);
             g++;
-            if (w.size > 10) w.size = w.size ;//* 2
             setTimeout(function () {placeText(w.name.toUpperCase(), w.size,font, foregroundColors, backgroundColor, colorFun);},1);
         });
     }
-
 };
 
 function placeText(text, sz,font, foregroundColors, backgroundColor, colorFun) {
@@ -172,7 +167,6 @@ function placeText(text, sz,font, foregroundColors, backgroundColor, colorFun) {
         context.fillText(text, precalcxdelta, precalcydelta);
     }
 }
-
 
 function testPut(x1, y1, width1, height1, x2, y2, width2, height2, text, text2) {
     if (x1 + width1 < x2 || // To the right of

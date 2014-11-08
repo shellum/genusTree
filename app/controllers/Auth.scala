@@ -10,7 +10,6 @@ import utils.FamilySearch
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import scala.concurrent.duration.Duration
-import ExecutionContext.Implicits.global
 
 object Auth extends Controller {
 
@@ -59,7 +58,7 @@ object Auth extends Controller {
       ret = response.body
     }
 
-    Await.result(future, Duration(30, java.util.concurrent.TimeUnit.SECONDS))
+    Await.result(future, Duration(90, java.util.concurrent.TimeUnit.SECONDS))
     val json = Json.parse(ret)
 
     (json \ "access_token").asOpt[String] match {

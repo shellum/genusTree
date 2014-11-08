@@ -114,7 +114,6 @@ object SingleGeneration extends Controller {
     })
 
     val auntUncleList = grandparentSet.getDescendants().filter(p => p.getDescendants().size == 0).sortBy(_.getName())
-
     val json = grandparentSet.toJson
 
     Ok(views.html.cousins("Aunts & Uncles", auntUncleList.sorted, auntUncleList.size, json.toString()))
@@ -157,7 +156,6 @@ object SingleGeneration extends Controller {
     matchedAuntUncle
   }
 
-
   val userForm = Form(
     mapping(
       "token" -> text,
@@ -165,6 +163,5 @@ object SingleGeneration extends Controller {
       "nameList" -> text
     )(Cousins.apply)(Cousins.unapply)
   )
-
 
 }
