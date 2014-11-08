@@ -80,13 +80,22 @@
         <script>
             var nameList = @Html(nameList);
 
+            function submitCousinsForm() {
+                $('.progress').show();
+                $('#get-cousins-button').attr("disabled", "disabled");
+                $('#get-cousins-form').attr('action', $('#action').val());
+                $('#get-cousins-form').submit();
+            }
+
             $(function () {
+                $('#get-cousins-form').keydown(function() {
+                    if (event.keyCode == 13) {
+                        submitCousinsForm();
+                    }
+                });
                 $('.progress').hide();
                 $('#get-cousins-button').click(function () {
-                    $('.progress').show();
-                    $('#get-cousins-button').attr("disabled", "disabled");
-                    $('#get-cousins-form').attr('action', $('#action').val());
-                    $('#get-cousins-form').submit();
+                    submitCousinsForm();
                 });
 
                 var names = new Bloodhound({
