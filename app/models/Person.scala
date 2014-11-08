@@ -1,6 +1,6 @@
 package models
 
-case class Person(name: String, pid: String, gender: String, parent: Option[Person], highlight: Boolean = false, link: String = "", firstName: String = "") extends Ordered[Person] {
+case class Person(name: String, pid: String, gender: String, parent: Option[Person], highlight: Boolean = false, link: String = "", firstName: String = "", ancestryNumber: String = "", descendancyNumber: String = "") extends Ordered[Person] {
   var children: List[Person] = List[Person]()
   var altName = ""
 

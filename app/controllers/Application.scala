@@ -7,7 +7,7 @@ import org.apache.commons.lang3.{StringEscapeUtils, StringUtils}
 import play.api.Play
 import play.api.data.Forms._
 import play.api.data._
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.{JsUndefined, JsObject, Json}
 import play.api.libs.ws.WS
 import play.api.mvc._
 
@@ -30,65 +30,78 @@ object Application extends Controller {
     Ok(views.html.privacy())
   }
 
+  def getLastDescendent(map: Map[String, Person], num: Int, generation: Int): (Person,Int) = {
+    val a = map.get(num.toString)
+    a match {
+      case None =>
+        getLastDescendent(map, num/2, generation-1)
+      case Some(p) =>
+        (p, generation)
+    }
+  }
+
+  def getDescendants(token: String, pid: String, generations: Int): List[Person] = {
+    var allPeople: List[Person] = List()
+    var nextGenToFollow: List[Person] = List(Person("Start",pid,"",None))
+    (1 to (generations+1)/2).reverse.foreach(i=> {
+      val generationsToGet = i match {
+        case 1 => 1
+        case _ => 2
+      }
+      var descendantFutures: List[Future[List[Person]]] = List()
+      nextGenToFollow.foreach(p=> {
+        descendantFutures = future {
+          getAncestors(token, p.pid, generationsToGet, "/platform/tree/descendancy")
+        } :: descendantFutures
+      })
+
+      var generationList: List[Person] = List()
+      val f = Future.sequence(descendantFutures).map(futureList => futureList.foreach(singleFuture => {
+        allPeople = singleFuture ::: allPeople
+        generationList = singleFuture ::: generationList
+      }))
+      Await.result(f, Duration(90, TimeUnit.SECONDS))
+      nextGenToFollow = generationList
+    })
+
+    allPeople
+  }
+
   def getAllPeople(generations: Int, pid: String, token: String): List[Person] = {
     var allPeople: List[Person] = List[Person]()
     System.out.println("starting walk up tree")
     //Walk up the tree
     //Start with self
     var parents: List[Person] = List(Person("doesn't matter", pid, "", None))
-    (1 to generations - 1).foreach(generation => {
-      System.out.println("getting a generation's parents")
-      var nextGenToFollow = List[Person]()
-      var parentsFutures = List[Future[List[Person]]]()
-      parents.foreach(parent => {
-        parentsFutures = future {
-          getParents(token, parent).distinct
-        } :: parentsFutures
-      })
+    var ancestors: List[Person] = getAncestors(token, pid, generations,"/platform/tree/ancestry")
 
-      val allParentFutures = Future.sequence(parentsFutures).map {
-        currentFutures => currentFutures.foreach(parentList => {
-          //parentList.foreach(p=>System.out.println("\tParent("+generation+"): "+p.name))
-          nextGenToFollow = parentList ::: nextGenToFollow
-        })
-      }
-      Await.result(allParentFutures, Duration(90,TimeUnit.SECONDS))
-      parents = nextGenToFollow.distinct
+    allPeople = ancestors.distinct
+
+    var ancestoryNumberToPersonMap: Map[String, Person] = Map()
+    ancestors.foreach(p=> {
+      ancestoryNumberToPersonMap += p.ancestryNumber -> p
     })
 
+    var descendantGenerations = 1
+    var descendantFutures: List[Future[List[Person]]] = List()
+    allPeople.foreach(p=> {
+      descendantFutures = future {getDescendants(token, p.pid, 2)} :: descendantFutures
+    })
+//    var descendantGenerations = 1
+//    var descendantFutures: List[Future[List[Person]]] = List()
+//    (Math.pow(2,generations).toInt to Math.pow(2,(generations+1)).toInt - 1).foreach(i=> {
+//      var personAndGeneration = getLastDescendent(ancestoryNumberToPersonMap,i,generations)
+//      println("spawn for "+personAndGeneration._1.pid)
+//      descendantFutures = future {getDescendants(token, personAndGeneration._1.pid, personAndGeneration._2)} :: descendantFutures
+//    })
 
-
-    allPeople = parents ::: allPeople
-
+    val f = Future.sequence(descendantFutures).map(futureList => futureList.foreach(singleFuture => allPeople = (singleFuture ::: allPeople).distinct))
+    Await.result(f, Duration(90, TimeUnit.SECONDS))
     //Walk back down the tree
 
     System.out.println("done with walk up tree")
 
-    (1 to generations - 1).foreach(something => {
-      var nextGenToFollow = List[Person]()
-      //Go down one generation
-      var auntUncleFutures = List[Future[List[Person]]]()
-      //System.out.println("About to spawn " + parents.size)
-      parents.foreach((item) => {
-        auntUncleFutures = future {
-          //System.out.println("in x")
-          getChildren(token, item.pid, item).distinct
-        } :: auntUncleFutures
-      })
-
-      val allAuntUncleFutures = Future.sequence(auntUncleFutures).map {
-        lst => lst.foreach(l => allPeople = {
-          //l.foreach(pp => System.out.println(pp.name))
-          nextGenToFollow = l ::: nextGenToFollow
-          allPeople ::: l
-        })
-      }
-      Await.result(allAuntUncleFutures, Duration(90, TimeUnit.SECONDS))
-      parents = nextGenToFollow.distinct
-      System.out.println("done with going down one generation")
-    })
-
-    allPeople
+    allPeople.distinct
   }
 
   def getNameList() = Action { implicit request =>
@@ -96,13 +109,14 @@ object Application extends Controller {
     val pid = nameListForm.bindFromRequest.get.pid
     val generations = nameListForm.bindFromRequest.get.generations
 
-    var allPeople = getAllPeople(generations, pid, token)
+    var allPeople = getAllPeople(5, pid, token).distinct
     var json = "["
     allPeople.distinct.foreach(p => {
       json = json + "{name:\"" + p.name + "\",pid:\"" + p.pid + "\"},"
     })
     json = json.substring(0, json.length - 1)
     json = json + "]"
+    json = json.replace("'","")
     Ok(json).as(TEXT)
   }
 
@@ -166,7 +180,7 @@ object Application extends Controller {
     sortedSimpleList.foreach(p => {
       nameCount = nameCount + 1
       //if (nameCount < 100) {
-        var nameSize = ((p.count * 35) / maxSize)
+        var nameSize = ((p.count * 45) / maxSize)
         val smallestSize = 13 - (sortedSimpleList.size / 100)
         if (nameSize < smallestSize) nameSize = smallestSize
         json = json + "{name:\"" + p.name + "\",size:" + nameSize + "},"
@@ -180,6 +194,12 @@ object Application extends Controller {
           json = json + "{name:\"" + p.name + "\",size:10},"
         })
       } while (nameCount < 150)
+
+    var i = 50
+    if (sortedSimpleList.size < 50) i = sortedSimpleList.size - 1
+    (1 to i).foreach(i=> {
+      json = json + "{name:\"" + sortedSimpleList(i).name + "\",size:10},"
+    })
 
     json = json.substring(0, json.length - 1)
     json = json + "]"
@@ -267,23 +287,11 @@ object Application extends Controller {
     val grandparentSet = Person("Grandparent Set", "", "", None, false)
 
     //Walk up the tree
-    val parents: List[Person] = getParents(token, Person("doesn't matter", pid, "", None))
-    var grandparents = List[Person]()
-    var parentsFutures = List[Future[List[Person]]]()
-    parents.foreach(parent => {
-      parentsFutures = future {
-        getParents(token, parent).distinct
-      } :: parentsFutures
-    })
+    var start = System.currentTimeMillis()/1000
 
-    val allParentFutures = Future.sequence(parentsFutures).map {
-      currentFutures => currentFutures.foreach(parentList => {
-        //parentList.foreach(p=>System.out.println("\tParent("+generation+"): "+p.name))
-        grandparents = parentList ::: grandparents
-      })
-    }
-    Await.result(allParentFutures, Duration(90,TimeUnit.SECONDS))
+    var grandparents = getAncestors(token, pid, 2,"/platform/tree/ancestry").filter(p=> {!p.ancestryNumber.contains("S") && p.ancestryNumber.toInt>3})
 
+    var mid = System.currentTimeMillis()/1000
     //Walk back down the tree
 
     //Get Aunts and Uncles
@@ -298,6 +306,8 @@ object Application extends Controller {
       lst => lst.foreach(l => grandparentSet.addDescendants(l))
     }
     Await.result(allAuntUncleFutures, Duration(90, TimeUnit.SECONDS))
+
+    var mid2 = System.currentTimeMillis()/1000
 
     // Get cousins
     var cousinFutures = List[Future[List[Person]]]()
@@ -336,6 +346,9 @@ object Application extends Controller {
     }
 
     Await.result(allCousinFutures, Duration(90, TimeUnit.SECONDS))
+    var end = System.currentTimeMillis()/1000
+
+    println("Times: "+ (mid-start) + ", " + (mid2 - mid) + ", " + (end - mid2))
 
     val cousinList = allCousins.foldLeft(List[Person]())((acc, item) => {
       if (item.pid != pid)
@@ -406,7 +419,6 @@ object Application extends Controller {
     var matchedAuntUncle: Person = null
     auntUncleList.foreach(auntUncle => {
       if (auntUncle.pid == cousin.parent.get.pid) {
-        //System.out.println("matched:" + auntUncle.name + " with " + cousin.name)
         matchedAuntUncle = auntUncle
       }
     })
@@ -489,6 +501,43 @@ object Application extends Controller {
             val fir = (firsts \ "parts")
             val firstNamez = (fir(0) \ "value").toString().replaceAll("\"", "").split(" ")(0)
             acc
+          })
+      }
+    }
+    Await.result(future, Duration(90, java.util.concurrent.TimeUnit.SECONDS))
+    ret
+  }
+
+  def getAncestors(token: String, selfPid: String, generations: Int, url: String): List[Person] = {
+    var ret: List[Person] = List[Person]()
+    val future = WS.url(FAMILYSEARCH_SERVER_URL + url +"?person=" + selfPid+"&generations="+generations)
+      .withHeaders(("Accept", "application/x-fs-v1+json"), ("Authorization", token))
+      .get().map { response =>
+      val body = response.body
+      body match {
+        case "" =>
+        case _ =>
+          val json = Json.parse(body)
+          val jsarray = json \ "persons"
+         // println(jsarray.toString())
+          ret = jsarray.as[List[JsObject]].foldLeft(List[Person]())((acc: List[Person], item: JsObject) => {
+            val id = (item \ "id").toString().replaceAll("\"", "")
+            val name = (item \ "display" \ "name").toString().replaceAll("\"", "").replace("\\","")
+            val ancesteryNumber = (item \ "display" \ "ascendancyNumber")
+            var ancesteryNumberStr = ""
+            if (ancesteryNumber != JsUndefined) ancesteryNumberStr = ancesteryNumber.toString().replaceAll("\"", "")
+            val descendancyNumber = (item \ "display" \ "descendancyNumber")
+            var descendancyNumberStr = ""
+            if (descendancyNumber != JsUndefined) descendancyNumberStr = descendancyNumber.toString().replaceAll("\"", "")
+            val gender = (item \ "gender" \ "type").toString().replaceAll("\"", "").replace("http://gedcomx.org/", "")
+            val link = (item \ "links" \ "person" \ "href").toString().replaceAll("\"", "")
+            val firstName = ((item \ "names")(0))
+            val firsts = (firstName \ "nameForms")(0)
+            val fir = (firsts \ "parts")
+            val firstNamez = (fir(0) \ "value").toString().replaceAll("\"", "").replace("\\","").split(" ")(0)
+         //   println("FOUND " + name + " at " + generations)
+            val person = Person(name, id, gender, None, link = link, firstName = firstNamez, ancestryNumber = ancesteryNumberStr, descendancyNumber = descendancyNumberStr)
+            person :: acc
           })
       }
     }

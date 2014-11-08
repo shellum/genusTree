@@ -71,6 +71,11 @@
     text-align:center;
 }
 
+
+#person-list {
+    width: 350px;
+}
+
 #main-panel-button {
 }
 

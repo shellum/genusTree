@@ -27,7 +27,7 @@
                 <br>
                 GenusTree does not know about living family members that you have not manually added to your FamilySearch tree.
             }
-            <ul id='person-list' class="list-group" style="float:left">
+            <ul id='person-list' class="list-group" style="float:left;width:270px;">
                 @for((p) <- peopleSet) {
                     @(i+=1)
                     <li class="list-group-item left-list-item" style='margin-left:10px;margin-right:10px;' href="@p.link">@i @p.name @p.altName</li>

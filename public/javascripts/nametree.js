@@ -96,23 +96,21 @@ function drawTree(words, font, foregroundColors, backgroundColor, colorFun) {
     context.lineTo(scale*248.07260999999994,427.0000100000001*scale);
     context.lineTo(scale*168.37660999999994,427.0000100000001*scale);
     context.stroke();
-
+context.fillStyle='#ff0000';
     var g = 0;
     for (u = 0; u < 1; u++) {
         console.log(u);
         words.forEach(function (w) {
             console.log(g + '/' + words.length);
             g++;
-            if (w.size > 10) w.size = w.size * 1.5
-            placeText(w.name.toUpperCase(), w.size,font, foregroundColors, backgroundColor, colorFun);
+            if (w.size > 10) w.size = w.size ;//* 2
+            setTimeout(function () {placeText(w.name.toUpperCase(), w.size,font, foregroundColors, backgroundColor, colorFun);},1);
         });
     }
 
 };
 
 function placeText(text, sz,font, foregroundColors, backgroundColor, colorFun) {
-    if (text == 'NELSON')
-    text = 'NELSON';
     context.font = sz + 'pt '+font;
     var cwidth = context.measureText(text).width;
     var cheight = sz;
@@ -177,8 +175,6 @@ function placeText(text, sz,font, foregroundColors, backgroundColor, colorFun) {
 
 
 function testPut(x1, y1, width1, height1, x2, y2, width2, height2, text, text2) {
-    if (text == "NELSON" && text2 == "ALICE")
-    text = 'WHOA';
     if (x1 + width1 < x2 || // To the right of
         y1 < y2 - height2 || // Under
         x1 > x2 + width2 || // To the left of

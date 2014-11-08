@@ -94,7 +94,8 @@
                         return Bloodhound.tokenizers.whitespace(d.name);
                     },
                     queryTokenizer: Bloodhound.tokenizers.whitespace,
-                    local: nameList
+                    local: nameList,
+                    limit:10
                 });
 
                 names.initialize();

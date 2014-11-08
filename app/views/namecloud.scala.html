@@ -10,19 +10,7 @@
     <script src="@routes.Assets.at("javascripts/jquery-1.11.1.min.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/d3.min.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/nametree.js")"></script>
-    <script>
-        $(function() {
-            var canvas = document.getElementById("canvas");
-            var context = canvas.getContext("2d");
-            var width = $('#canvas').attr('width').replace('px','');
-            var height = $('#canvas').attr('height').replace('px','');
-            $('main-panel').css('background',0);
-            context.rect(0,0,width,height);
-            context.fillStyle="@colorScheme.backgroundColor";
-            context.fill();
-            drawTree(@Html(json), '@font', @Html(colorScheme.foregroundColors), '@Html(colorScheme.backgroundColor)', @Html(colorScheme.colorFun));
-        });
-    </script>
+
 </head>
     <body>
         <div id='header-panel'>
@@ -46,5 +34,19 @@
             <div id='footer-text'><a href="/privacyPolicy">Privacy Policy</a><a id='logout-link' href="/">Logout</a></div>
         </div>
     </body>
+    <script>
+    var canvas = document.getElementById("canvas");
+    var context = canvas.getContext("2d");
+    var width = $('#canvas').attr('width').replace('px','');
+    var height = $('#canvas').attr('height').replace('px','');
+    $('main-panel').css('background',0);
+    context.rect(0,0,width,height);
+    context.fillStyle="@colorScheme.backgroundColor";
+    context.fill();
+    //$(function() {
+    setTimeout(function() {
+    drawTree(@Html(json), '@font', @Html(colorScheme.foregroundColors), '@Html(colorScheme.backgroundColor)', @Html(colorScheme.colorFun))},10);
+    //});
+    </script>
     @analytics()
 </html>
