@@ -19,6 +19,9 @@ object Application extends Controller {
   val FAMILYSEARCH_SERVER_URL: String = Play.current.configuration.getString("familysearch.server.url").get
   val FAMILYSEARCH_IDENT_URL: String = Play.current.configuration.getString("familysearch.ident.url").get
 
+  val API_URL_DESCENDANCY: String = "/platform/tree/descendancy"
+  val API_URL_ANCESTRY: String = "/platform/tree/ancestry"
+
   def index = Action {
     Ok(views.html.index(FAMILYSEARCH_IDENT_URL))
   }
@@ -37,9 +40,10 @@ object Application extends Controller {
     }
   }
 
+
   def getDescendants(token: String, pid: String, generations: Int): List[Person] = {
     var allPeople: List[Person] = List()
-    var nextGenToFollow: List[Person] = List(Person("Start",pid,"",None))
+    var nextGenToFollow: List[Person] = List(Person(pid))
     (1 to (generations+1)/2).reverse.foreach(i=> {
       val generationsToGet = i match {
         case 1 => 1
@@ -48,7 +52,7 @@ object Application extends Controller {
       var descendantFutures: List[Future[List[Person]]] = List()
       nextGenToFollow.foreach(p=> {
         descendantFutures = future {
-          getAncestors(token, p.pid, generationsToGet, "/platform/tree/descendancy")
+          getAncestors(token, p.pid, generationsToGet, API_URL_DESCENDANCY)
         } :: descendantFutures
       })
 
@@ -69,8 +73,8 @@ object Application extends Controller {
     System.out.println("starting walk up tree")
     //Walk up the tree
     //Start with self
-    var parents: List[Person] = List(Person("doesn't matter", pid, "", None))
-    val ancestors: List[Person] = getAncestors(token, pid, generations,"/platform/tree/ancestry")
+    var parents: List[Person] = List(Person(pid))
+    val ancestors: List[Person] = getAncestors(token, pid, generations,API_URL_ANCESTRY)
 
     allPeople = ancestors.distinct
 
@@ -261,12 +265,12 @@ object Application extends Controller {
 
   def getCousinTree(token: String, pid: String): (Person, List[Person]) = {
     var addedCousins: Map[String, Person] = Map[String, Person]()
-    val grandparentSet = Person("Grandparent Set", "", "", None, false)
+    val grandparentSet = Person("")
 
     //Walk up the tree
     val start = System.currentTimeMillis()/1000
 
-    val grandparents = getAncestors(token, pid, 2,"/platform/tree/ancestry").filter(p=> {!p.ancestryNumber.contains("S") && p.ancestryNumber.toInt>3})
+    val grandparents = getAncestors(token, pid, 2,API_URL_ANCESTRY).filter(p=> {!p.ancestryNumber.contains("S") && p.ancestryNumber.toInt>3})
 
     val mid = System.currentTimeMillis()/1000
     //Walk back down the tree
@@ -301,7 +305,7 @@ object Application extends Controller {
           var cousinsToAdd = singleAuntUncleChildren
           var toRemove = List[Person]()
           singleAuntUncleChildren.foreach((cousin) => {
-            val addedCousin = addedCousins.get(cousin.pid).getOrElse(Person("", "", "", None))
+            val addedCousin = addedCousins.get(cousin.pid).getOrElse(Person(""))
             if (addedCousin.getPid == "") {
               addedCousins += (cousin.getPid() -> cousin)
             }
@@ -372,7 +376,7 @@ object Application extends Controller {
     val grandparentSet = treeTuple._1
     var cousinList = List[Person]()
 
-    val gps = Person("All Grandparents", "", "", None)
+    val gps = Person("", "All Grandparents")
     // Only save aunts/uncles that have descendants
     grandparentSet.getDescendants().filter(p => {
       p.children.size > 0
@@ -422,7 +426,7 @@ object Application extends Controller {
             val fir = (firsts \ "parts")
             val firstNamez = (fir(0) \ "value").toString().replaceAll("\"", "").split(" ")(0)
             val highlight = id.equals(selfPid)
-            val person = Person(name, id, gender, Some[Person](parent), highlight = highlight, link = link, firstName = firstNamez)
+            val person = Person(id, name, gender, Some[Person](parent), highlight = highlight, link = link, firstName = firstNamez)
             person :: acc
           })
       }
@@ -457,7 +461,7 @@ object Application extends Controller {
             val firsts = (firstName \ "nameForms")(0)
             val fir = (firsts \ "parts")
             val firstNamez = (fir(0) \ "value").toString().replaceAll("\"", "").replace("\\","").split(" ")(0)
-            val person = Person(name, id, gender, None, link = link, firstName = firstNamez, ancestryNumber = ancesteryNumberStr, descendancyNumber = descendancyNumberStr)
+            val person = Person(id, name, gender, None, link = link, firstName = firstNamez, ancestryNumber = ancesteryNumberStr, descendancyNumber = descendancyNumberStr)
             person :: acc
           })
       }
