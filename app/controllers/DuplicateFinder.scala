@@ -8,11 +8,18 @@ import utils.FamilySearch
 
 object DuplicateFinder extends Controller {
 
+  def findDuplicateDetails = Action { implicit request =>
+    val token = duplicateForm.bindFromRequest.get.token
+    val pid = duplicateForm.bindFromRequest.get.pid
+
+    Ok(views.html.duplicatedetails(token, pid))
+  }
+
   def findDuplicates = Action { implicit request =>
     val token = duplicateForm.bindFromRequest.get.token
     val pid = duplicateForm.bindFromRequest.get.pid
 
-    val allPeople = FamilySearch.getAllPeople(3, pid, token).distinct
+    val allPeople = FamilySearch.getAllPeople(3, 2, pid, token).distinct
 
     var ancestryNumberToPersonMap: Map[String, Person] = Map()
 
@@ -43,16 +50,6 @@ object DuplicateFinder extends Controller {
           duplicatePids += otherParent.pid
           duplicates = (parent, otherParent) :: duplicates
         }
-//        parent.getDescendants().foreach(descendant => {
-//          otherParent.getDescendants().foreach(otherDescendant => {
-//
-//            if (parent.name == otherParent && descendant.name == otherDescendant.name)
-//              if (parent.pid == otherParent.pid)
-//                duplicates = (descendant, otherDescendant) :: duplicates
-//              else
-//                duplicates = (parent, otherParent) :: duplicates
-//          })
-//        })
       })
     })
     duplicates = duplicates.sortBy(_._1.name)

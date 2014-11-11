@@ -26,7 +26,7 @@ object Auth extends Controller {
     val pid = nameListForm.bindFromRequest.get.pid
     val generations = nameListForm.bindFromRequest.get.generations
 
-    val allPeople = FamilySearch.getAllPeople(5, pid, token).distinct
+    val allPeople = FamilySearch.getAllPeople(4, 1, pid, token).distinct
     var json = "["
     allPeople.distinct.foreach(p => {
       json = json + "{name:\"" + p.name + "\",pid:\"" + p.pid + "\"},"

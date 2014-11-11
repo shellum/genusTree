@@ -18,7 +18,7 @@ object NameCloud extends Controller {
     val colorScheme = ColorScheme(nameCloudForm.bindFromRequest.get.colorScheme)
     val font = StringEscapeUtils.escapeHtml4(StringEscapeUtils.escapeEcmaScript(unsanitizedFont))
 
-    val allPeople = FamilySearch.getAllPeople(generations, pid, token)
+    val allPeople = FamilySearch.getAllPeople(generations, generations, pid, token)
 
     var partToNamesMap = Map[String, List[Person]]()
 

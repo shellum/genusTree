@@ -134,9 +134,9 @@ object FamilySearch {
     allPeople
   }
 
-  def getAllPeople(generations: Int, pid: String, token: String): List[Person] = {
+  def getAllPeople(ascendingGenerations: Int, descendingGenerations: Int, pid: String, token: String): List[Person] = {
     var allPeople: List[Person] = List[Person]()
-    val ancestors: List[Person] = getAncestors(token, pid, generations,API_URL_ANCESTRY)
+    val ancestors: List[Person] = getAncestors(token, pid, ascendingGenerations,API_URL_ANCESTRY)
 
     allPeople = ancestors.distinct
 
@@ -147,7 +147,7 @@ object FamilySearch {
 
     var descendantFutures: List[Future[List[Person]]] = List()
     allPeople.foreach(p=> {
-      descendantFutures = future {getDescendants(token, p.pid, 2)} :: descendantFutures
+      descendantFutures = future {getDescendants(token, p.pid, descendingGenerations)} :: descendantFutures
     })
 
     val f = Future.sequence(descendantFutures).map(futureList => futureList.foreach(singleFuture =>
