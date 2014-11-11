@@ -18,6 +18,10 @@
                     $('#name-cloud-button').attr("disabled","disabled");
                     $('#name-cloud-form').submit();
                 });
+                $('#duplicates-form').click(function() {
+                    $('#duplicates-button').attr("disabled","disabled");
+                    $('#duplicates-form').submit();
+                });
             });
         </script>
     </head>
@@ -39,6 +43,12 @@
                 <input type='hidden' name='pid' value='@personId'/>
                 <input type='hidden' name='nameList' value='@Html(json)'/>
                 <input type='button' id='name-cloud-button' class="btn btn-success center-block padded-button" value='Name Cloud'/>
+            </form>
+            <form id='duplicates-form' style='float:left;margin:10px' action='/findDuplicates' method='POST'>
+                <img id='name-cloud-image' style='cursor: pointer; cursor: hand;' src="@routes.Assets.at("images/MenuNameCloud.png")"/>
+                <input type='hidden' name='token' value='@token'/>
+                <input type='hidden' name='pid' value='@personId'/>
+                <input type='button' id='duplicates-button' class="btn btn-success center-block padded-button" value='Find Duplicates'/>
             </form>
         </div>
         <div id='footer-panel'>

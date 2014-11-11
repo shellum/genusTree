@@ -11,4 +11,6 @@ POST    /getAuntsUncles             controllers.SingleGeneration.getAuntsUncles
 POST    /nameCloud                  controllers.NameCloud.nameCloud
 POST    /nameCloudDetails           controllers.NameCloud.nameCloudDetails
 
+POST    /findDuplicates             controllers.DuplicateFinder.findDuplicates
+
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

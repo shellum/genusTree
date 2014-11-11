@@ -25,12 +25,15 @@ object FamilySearch {
 
   def getChildren(token: String, selfPid: String, parent: Person): List[Person] = {
     var ret: List[Person] = List[Person]()
+    val timer = Timer("getChildren")
     val future = WS.url(FAMILYSEARCH_SERVER_URL + API_URL_PERSONS + parent.getPid + "/children")
       .withHeaders(("Accept", "application/x-fs-v1+json"), ("Authorization", token))
       .get().map { response =>
+      timer.logTime()
       val body = response.body
       body match {
         case "" =>
+        case "{\n  \"errors\" : [ {\n    \"code\" : 429\n  } ]\n}" => Event("throttled")
         case _ =>
           val json = Json.parse(body)
           val jsarray = json \ "persons"
@@ -55,18 +58,28 @@ object FamilySearch {
 
   def getAncestors(token: String, selfPid: String, generations: Int, url: String): List[Person] = {
     var ret: List[Person] = List[Person]()
+    var what = "getAncestors"
+    if (url.contains("descendancy"))
+      what = "getDescendants"
+    val timer = Timer(what)
     val future = WS.url(FAMILYSEARCH_SERVER_URL + url +"?person=" + selfPid+"&generations="+generations)
       .withHeaders(("Accept", "application/x-fs-v1+json"), ("Authorization", token))
       .get().map { response =>
+      timer.logTime()
       val body = response.body
       body match {
         case "" =>
+        case "{\n  \"errors\" : [ {\n    \"code\" : 429\n  } ]\n}" => Event("throttled")
         case _ =>
           val json = Json.parse(body)
           val jsarray = json \ "persons"
           ret = jsarray.as[List[JsObject]].foldLeft(List[Person]())((acc: List[Person], item: JsObject) => {
             val id = (item \ "id").toString().replaceAll("\"", "")
-            val name = (item \ "display" \ "name").toString().replaceAll("\"", "").replace("\\","")
+            val name = (item \ "display" \ "name")
+            val nameText = name match {
+              case x : JsUndefined => "Unknown";
+              case x => x.toString().replaceAll("\"", "").replace("\\","");
+            }
             val ancesteryNumber = item \ "display" \ "ascendancyNumber"
             var ancesteryNumberStr = ""
             if (ancesteryNumber != JsUndefined) ancesteryNumberStr = ancesteryNumber.toString().replaceAll("\"", "")
@@ -79,7 +92,7 @@ object FamilySearch {
             val firsts = (firstName \ "nameForms")(0)
             val fir = firsts \ "parts"
             val firstNamez = (fir(0) \ "value").toString().replaceAll("\"", "").replace("\\","").split(" ")(0)
-            val person = Person(id, name, gender, None, link = link, firstName = firstNamez, ancestryNumber = ancesteryNumberStr, descendancyNumber = descendancyNumberStr)
+            val person = Person(id, nameText, gender, None, link = link, firstName = firstNamez, ancestryNumber = ancesteryNumberStr, descendancyNumber = descendancyNumberStr)
             person :: acc
           })
       }
@@ -91,7 +104,12 @@ object FamilySearch {
   def getDescendants(token: String, pid: String, generations: Int): List[Person] = {
     var allPeople: List[Person] = List()
     var nextGenToFollow: List[Person] = List(Person(pid))
-    (1 to (generations+1)/2).reverse.foreach(i=> {
+
+    // Off case fix
+    var fixedGenerations = generations
+    if (generations == 2) fixedGenerations = 4
+
+    (1 to (fixedGenerations+1)/2).reverse.foreach(i=> {
       val generationsToGet = i match {
         case 1 => 1
         case _ => 2
@@ -109,6 +127,7 @@ object FamilySearch {
         generationList = singleFuture ::: generationList
       }))
       Await.result(f, Duration(90, TimeUnit.SECONDS))
+
       nextGenToFollow = generationList
     })
 
@@ -131,7 +150,9 @@ object FamilySearch {
       descendantFutures = future {getDescendants(token, p.pid, 2)} :: descendantFutures
     })
 
-    val f = Future.sequence(descendantFutures).map(futureList => futureList.foreach(singleFuture => allPeople = (singleFuture ::: allPeople).distinct))
+    val f = Future.sequence(descendantFutures).map(futureList => futureList.foreach(singleFuture =>
+      allPeople = (singleFuture ::: allPeople).distinct)
+    )
     Await.result(f, Duration(90, TimeUnit.SECONDS))
 
     allPeople.distinct
