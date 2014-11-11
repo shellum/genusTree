@@ -1,20 +1,12 @@
-@(token: String, personId: String)
+@(token: String, personId: String, nameList: String)
 <!DOCTYPE html>
 <html>
     <head>
-        <title>GenusTree</title>
-        <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
-        <link rel="stylesheet" href="@routes.Assets.at("stylesheets/bootstrap.min.css")">
-        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
-        <link rel="stylesheet" media="screen and (max-width: 600px)" href="@routes.Assets.at("stylesheets/main-small.css")">
-        <script src="@routes.Assets.at("javascripts/jquery-1.11.1.min.js")" type="text/javascript"></script>
+        @includes()
         <script>
-            $(function () {
-               $('#name-cloud-setup-button').click(function() {
-                   $('.progress').show();
-                   $('#name-cloud-setup-button').attr("disabled","disabled");
-                   $('#name-cloud-setup-form').submit();
-               })
+        var nameList = @Html(nameList);
+        $(function () {
+                initAutoComplete();
             });
         </script>
     </head>
@@ -27,7 +19,8 @@
                 <div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
             </div>
             <div>
-            <form id='name-cloud-setup-form' action='/nameCloud' method='POST'>
+            <form id='main-form' action='/nameCloud' method='POST'>
+                <input type="hidden" name="action" value="/nameCloud"/>
                 <input type='hidden' name='token' value='@token'/>
                 <div class="form-element field-width">
                     Number of generations:
@@ -58,9 +51,10 @@
                         <option value="3">White on Black</option>
                     </select>
                 </div>
+                @autocompleteform(personId)
                 <input type='hidden' class="form-control" name='pid' value='@personId'/>
                 <div class="form-element">
-                    <input type='button' id='name-cloud-setup-button' class="btn btn-success" value='Search'/>
+                    <input type='button' id='submit-button' class="btn btn-success" value='Search'/>
                 </div>
             </form>
             </div>

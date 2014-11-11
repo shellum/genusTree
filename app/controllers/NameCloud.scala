@@ -95,8 +95,9 @@ object NameCloud extends Controller {
     implicit request => {
       val token = userForm.bindFromRequest.get.token
       val pid = userForm.bindFromRequest.get.pid
+      val nameList = userForm.bindFromRequest.get.nameList
 
-      Ok(views.html.nameclouddetails(token, pid))
+      Ok(views.html.nameclouddetails(token, pid, nameList))
     }
   }
 
