@@ -184,4 +184,36 @@ object FamilySearch {
     ret
   }
 
+  def getPerson(token: String, personId: String) = {
+    var ret = Person("")
+    val timer = Timer("getPerson")
+    val future = WS.url(FamilySearch.FAMILYSEARCH_SERVER_URL + "/platform/tree/persons/" + personId)
+      .withHeaders(("Accept", "application/x-gedcomx-v1+json"), ("Authorization", token))
+      .get().map { response =>
+      timer.logTime()
+      val user = response.body
+      val j = Json.parse(user)
+      val jsarray = j \ "persons"
+      jsarray.as[List[JsObject]].foldLeft(List[Person]())((acc: List[Person], item: JsObject) => {
+        val id = (item \ "id").toString().replaceAll("\"", "")
+        val name = (item \ "display" \ "name")
+        val nameText = name match {
+          case x: JsUndefined => "Unknown";
+          case x => x.toString().replaceAll("\"", "").replace("\\", "");
+        }
+        val lifespan = (item \ "display" \ "lifespan")
+        val lifespanText = lifespan match {
+          case x: JsUndefined => "Unknown";
+          case x => x.toString().replaceAll("\"", "").replace("\\", "");
+        }
+        ret = Person(personId, nameText)
+        ret.setLifespan(lifespanText)
+        acc
+      })
+    }
+
+    Await.result(future, Duration(90, java.util.concurrent.TimeUnit.SECONDS))
+    ret
+  }
+
 }

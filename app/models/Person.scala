@@ -3,6 +3,7 @@ package models
 case class Person(pid: String, name: String = "", gender: String = "", parent: Option[Person] = None, highlight: Boolean = false, link: String = "", firstName: String = "", ancestryNumber: String = "", descendancyNumber: String = "") extends Ordered[Person] {
   var children: List[Person] = List[Person]()
   var altName = ""
+  var lifespan = ""
 
   override def hashCode(): Int = pid.hashCode()
 
@@ -15,6 +16,10 @@ case class Person(pid: String, name: String = "", gender: String = "", parent: O
   def getPid() = pid
 
   def getDescendants() = children
+
+  def setLifespan(lifespan: String) = this.lifespan = lifespan
+
+  def getLifespan() = lifespan
 
   def addDescendant(person: Person) = {
     if (!children.contains(person))

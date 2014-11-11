@@ -48,9 +48,17 @@ object DuplicateFinder extends Controller {
         }
       })
     })
-    duplicates = duplicates.sortBy(_._1.name)
 
-    Ok(views.html.duplicates(duplicates))
+    var detailedDuplicates: List[(Person, Person)] = List()
+
+    duplicates.foreach(pair=>{
+      detailedDuplicates = (FamilySearch.getPerson(token, pair._1.pid),
+        FamilySearch.getPerson(token, pair._2.pid)) :: detailedDuplicates
+    })
+
+    detailedDuplicates = detailedDuplicates.sortBy(_._1.name)
+
+    Ok(views.html.duplicates(detailedDuplicates))
   }
 
 }
