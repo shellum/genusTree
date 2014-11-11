@@ -5,19 +5,21 @@ import play.api.data.Form
 import play.api.data.Forms._
 import play.api.mvc.{Action, Controller}
 import utils.FamilySearch
+import controllers.Auth.{userForm,baseUserForm}
 
 object DuplicateFinder extends Controller {
 
   def findDuplicateDetails = Action { implicit request =>
-    val token = duplicateForm.bindFromRequest.get.token
-    val pid = duplicateForm.bindFromRequest.get.pid
+    val token = userForm.bindFromRequest.get.token
+    val pid = userForm.bindFromRequest.get.pid
+    val nameList = userForm.bindFromRequest.get.nameList
 
-    Ok(views.html.duplicatedetails(token, pid))
+    Ok(views.html.duplicatedetails(token, pid, nameList))
   }
 
   def findDuplicates = Action { implicit request =>
-    val token = duplicateForm.bindFromRequest.get.token
-    val pid = duplicateForm.bindFromRequest.get.pid
+    val token = baseUserForm.bindFromRequest.get.token
+    val pid = baseUserForm.bindFromRequest.get.pid
 
     val allPeople = FamilySearch.getAllPeople(3, 2, pid, token).distinct
 
@@ -56,14 +58,5 @@ object DuplicateFinder extends Controller {
 
     Ok(views.html.duplicates(duplicates))
   }
-
-  val duplicateForm = Form(
-    mapping(
-      "token" -> text,
-      "pid" -> text
-    )(DuplicateParams.apply)(DuplicateParams.unapply)
-  )
-
-  case class DuplicateParams(token: String, pid: String)
 
 }
