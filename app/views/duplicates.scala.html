@@ -24,7 +24,7 @@
             <ul id='person-list' class="list-group" style="float:left;width:500px;">
                 @for((p1,p2) <- duplicates) {
                     @(i+=1)
-                    <li class="list-group-item left-list-item" style='margin-left:10px;margin-right:10px;'>@i <a href="@p1.link">@p1.name @p1.pid (@p1.lifespan)</a><br>&nbsp;&</bt><a href="@p2.link">@p2.name @p2.pid (@p2.lifespan)</a></li>
+                    <li class="list-group-item left-list-item" style='margin-left:10px;margin-right:10px;'>@i <a href="@p1.link" target="_blank">@p1.name @p1.pid (@p1.lifespan)</a><br>&nbsp;&</bt><a href="@p2.link" target="_blank">@p2.name @p2.pid (@p2.lifespan)</a></li>
                 }
             </ul>
         </div>

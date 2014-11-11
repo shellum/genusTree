@@ -206,7 +206,8 @@ object FamilySearch {
           case x: JsUndefined => "Unknown";
           case x => x.toString().replaceAll("\"", "").replace("\\", "");
         }
-        ret = Person(personId, nameText)
+        val link = "https://familysearch.org/ark:/61903/4:1:" + id
+        ret = Person(personId, nameText,link=link)
         ret.setLifespan(lifespanText)
         acc
       })
