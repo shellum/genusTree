@@ -4,12 +4,12 @@ import java.util.concurrent.TimeUnit
 
 import models.Person
 import play.api.Play
-import play.api.libs.json.{JsUndefined, JsObject, Json}
+import play.api.libs.json.{JsObject, JsUndefined, Json}
 import play.api.libs.ws.WS
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import scala.concurrent.duration.Duration
-import scala.concurrent.ExecutionContext.Implicits.global
 
 
 object FamilySearch {
@@ -62,7 +62,7 @@ object FamilySearch {
     if (url.contains("descendancy"))
       what = "getDescendants"
     val timer = Timer(what)
-    val future = WS.url(FAMILYSEARCH_SERVER_URL + url +"?person=" + selfPid+"&generations="+generations)
+    val future = WS.url(FAMILYSEARCH_SERVER_URL + url + "?person=" + selfPid + "&generations=" + generations)
       .withHeaders(("Accept", "application/x-fs-v1+json"), ("Authorization", token))
       .get().map { response =>
       timer.logTime()
@@ -77,8 +77,8 @@ object FamilySearch {
             val id = (item \ "id").toString().replaceAll("\"", "")
             val name = (item \ "display" \ "name")
             val nameText = name match {
-              case x : JsUndefined => "Unknown";
-              case x => x.toString().replaceAll("\"", "").replace("\\","");
+              case x: JsUndefined => "Unknown";
+              case x => x.toString().replaceAll("\"", "").replace("\\", "");
             }
             val ancesteryNumber = item \ "display" \ "ascendancyNumber"
             var ancesteryNumberStr = ""
@@ -87,11 +87,11 @@ object FamilySearch {
             var descendancyNumberStr = ""
             if (descendancyNumber != JsUndefined) descendancyNumberStr = descendancyNumber.toString().replaceAll("\"", "")
             val gender = (item \ "gender" \ "type").toString().replaceAll("\"", "").replace("http://gedcomx.org/", "")
-            val link = "https://familysearch.org/ark:/61903/4:1:"+id
+            val link = "https://familysearch.org/ark:/61903/4:1:" + id
             val firstName = (item \ "names")(0)
             val firsts = (firstName \ "nameForms")(0)
             val fir = firsts \ "parts"
-            val firstNamez = (fir(0) \ "value").toString().replaceAll("\"", "").replace("\\","").split(" ")(0)
+            val firstNamez = (fir(0) \ "value").toString().replaceAll("\"", "").replace("\\", "").split(" ")(0)
             val person = Person(id, nameText, gender, None, link = link, firstName = firstNamez, ancestryNumber = ancesteryNumberStr, descendancyNumber = descendancyNumberStr)
             person :: acc
           })
@@ -109,13 +109,13 @@ object FamilySearch {
     var fixedGenerations = generations
     if (generations == 2) fixedGenerations = 4
 
-    (1 to (fixedGenerations+1)/2).reverse.foreach(i=> {
+    (1 to (fixedGenerations + 1) / 2).reverse.foreach(i => {
       val generationsToGet = i match {
         case 1 => 1
         case _ => 2
       }
       var descendantFutures: List[Future[List[Person]]] = List()
-      nextGenToFollow.foreach(p=> {
+      nextGenToFollow.foreach(p => {
         descendantFutures = future {
           getAncestors(token, p.pid, generationsToGet, API_URL_DESCENDANCY)
         } :: descendantFutures
@@ -136,18 +136,20 @@ object FamilySearch {
 
   def getAllPeople(ascendingGenerations: Int, descendingGenerations: Int, pid: String, token: String): List[Person] = {
     var allPeople: List[Person] = List[Person]()
-    val ancestors: List[Person] = getAncestors(token, pid, ascendingGenerations,API_URL_ANCESTRY)
+    val ancestors: List[Person] = getAncestors(token, pid, ascendingGenerations, API_URL_ANCESTRY)
 
     allPeople = ancestors.distinct
 
     var ancestryNumberToPersonMap: Map[String, Person] = Map()
-    ancestors.foreach(p=> {
+    ancestors.foreach(p => {
       ancestryNumberToPersonMap += p.ancestryNumber -> p
     })
 
     var descendantFutures: List[Future[List[Person]]] = List()
-    allPeople.foreach(p=> {
-      descendantFutures = future {getDescendants(token, p.pid, descendingGenerations)} :: descendantFutures
+    allPeople.foreach(p => {
+      descendantFutures = future {
+        getDescendants(token, p.pid, descendingGenerations)
+      } :: descendantFutures
     })
 
     val f = Future.sequence(descendantFutures).map(futureList => futureList.foreach(singleFuture =>
@@ -158,14 +160,28 @@ object FamilySearch {
     allPeople.distinct
   }
 
-  def getLastDescendent(map: Map[String, Person], num: Int, generation: Int): (Person,Int) = {
+  def getLastDescendent(map: Map[String, Person], num: Int, generation: Int): (Person, Int) = {
     val a = map.get(num.toString)
     a match {
       case None =>
-        getLastDescendent(map, num/2, generation-1)
+        getLastDescendent(map, num / 2, generation - 1)
       case Some(p) =>
         (p, generation)
     }
+  }
+
+  def getCurrentUser(token: String) = {
+    var ret = ""
+    val timer = Timer("getCurrentUser")
+    val future = WS.url(FamilySearch.FAMILYSEARCH_SERVER_URL + "/platform/users/current")
+      .withHeaders(("Accept", "application/x-fs-v1+json"), ("Authorization", token))
+      .get().map { response =>
+      timer.logTime()
+      ret = response.body
+    }
+
+    Await.result(future, Duration(90, java.util.concurrent.TimeUnit.SECONDS))
+    ret
   }
 
 }

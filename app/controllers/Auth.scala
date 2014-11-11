@@ -67,25 +67,13 @@ object Auth extends Controller {
         var token: String = (json \ "access_token").toString
         token = "Bearer " + token.replaceAll("\"", "")
 
-        val user = getCurrentUser(token)
+        val user = FamilySearch.getCurrentUser(token)
         val j = Json.parse(user)
         val jsarray = j \ "users"
         val personId = (jsarray(0) \ "personId").toString().replace("\"", "")
         val displayName = (jsarray(0) \ "displayName").toString().replace("\"", "")
         Ok(views.html.loading(token, personId))
     }
-  }
-
-  def getCurrentUser(token: String) = {
-    var ret = ""
-    val future = WS.url(FamilySearch.FAMILYSEARCH_SERVER_URL + "/platform/users/current")
-      .withHeaders(("Accept", "application/x-fs-v1+json"), ("Authorization", token))
-      .get().map { response =>
-      ret = response.body
-    }
-
-    Await.result(future, Duration(90, java.util.concurrent.TimeUnit.SECONDS))
-    ret
   }
 
   val userForm = Form(

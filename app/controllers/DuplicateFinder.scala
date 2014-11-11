@@ -1,11 +1,9 @@
 package controllers
 
+import controllers.Auth.{baseUserForm, userForm}
 import models.Person
-import play.api.data.Form
-import play.api.data.Forms._
 import play.api.mvc.{Action, Controller}
 import utils.FamilySearch
-import controllers.Auth.{userForm,baseUserForm}
 
 object DuplicateFinder extends Controller {
 
@@ -44,10 +42,6 @@ object DuplicateFinder extends Controller {
 
     allPeople.foreach(parent => {
       allPeople.foreach(otherParent => {
-        if (parent.name.contains("Marie") && otherParent.name.contains("Marie") && parent.name.contains("B") && otherParent.name.contains("B")) {
-          var j = parent.pid + "d"
-          j = j + "dsf"
-        }
         if (parent.name == otherParent.name && parent.pid != otherParent.pid && !duplicatePids.contains(parent.pid) && !duplicatePids.contains(otherParent.pid)) {
           duplicatePids += otherParent.pid
           duplicates = (parent, otherParent) :: duplicates

@@ -1,7 +1,7 @@
 package controllers
 
 import controllers.Auth._
-import models.{Person, ColorScheme, SimplePerson}
+import models.{ColorScheme, Person, SimplePerson}
 import org.apache.commons.lang3.StringEscapeUtils
 import play.api.data.Form
 import play.api.data.Forms._
@@ -61,13 +61,13 @@ object NameCloud extends Controller {
 
     sortedSimpleList.foreach(p => {
       nameCount = nameCount + 1
-      var nameSize = ((p.count * (65 - ((10-generations)*3))) / maxSize)
+      var nameSize = ((p.count * (65 - ((10 - generations) * 3))) / maxSize)
       //val smallestSize = 13 - (sortedSimpleList.size / 100)
       //if (nameSize < smallestSize) nameSize = smallestSize
       if (nameSize < 20 && nameSize > 10) nameSize -= 5
       else if (nameSize < 10) nameSize = 10
       if (nameCount < 150)
-      json = json + "{name:\"" + p.name + "\",size:" + nameSize + "},"
+        json = json + "{name:\"" + p.name + "\",size:" + nameSize + "},"
     })
 
     if (nameCount < 100)
@@ -79,7 +79,7 @@ object NameCloud extends Controller {
       } while (nameCount < 150)
 
     var i = 30
-    if (sortedSimpleList.size-1 < 30) i = sortedSimpleList.size - 1
+    if (sortedSimpleList.size - 1 < 30) i = sortedSimpleList.size - 1
     (1 to i).foreach(i => {
       json = json + "{name:\"" + sortedSimpleList(i).name + "\",size:10},"
     })
