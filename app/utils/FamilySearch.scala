@@ -69,6 +69,7 @@ object FamilySearch {
       val body = response.body
       body match {
         case "" =>
+        case "{\n  \"errors\" : [ {\n    \"code\" : 503,\n    \"label\" : \"Service Unavailable\",\n    \"message\" : \"Timeout waiting for connection to CIS.\"\n  } ]\n}" =>
         case "{\n  \"errors\" : [ {\n    \"code\" : 429\n  } ]\n}" => Event("throttled")
         case _ =>
           val json = Json.parse(body)
@@ -147,6 +148,7 @@ object FamilySearch {
 
     var descendantFutures: List[Future[List[Person]]] = List()
     allPeople.foreach(p => {
+      Thread.sleep(10000)
       descendantFutures = future {
         getDescendants(token, p.pid, descendingGenerations)
       } :: descendantFutures
@@ -192,29 +194,52 @@ object FamilySearch {
       .get().map { response =>
       timer.logTime()
       val user = response.body
-      val j = Json.parse(user)
-      val jsarray = j \ "persons"
-      jsarray.as[List[JsObject]].foldLeft(List[Person]())((acc: List[Person], item: JsObject) => {
-        val id = (item \ "id").toString().replaceAll("\"", "")
-        val name = (item \ "display" \ "name")
-        val nameText = name match {
-          case x: JsUndefined => "Unknown";
-          case x => x.toString().replaceAll("\"", "").replace("\\", "");
-        }
-        val lifespan = (item \ "display" \ "lifespan")
-        val lifespanText = lifespan match {
-          case x: JsUndefined => "Unknown";
-          case x => x.toString().replaceAll("\"", "").replace("\\", "");
-        }
-        val link = "https://familysearch.org/ark:/61903/4:1:" + id
-        ret = Person(personId, nameText,link=link)
-        ret.setLifespan(lifespanText)
-        acc
-      })
+      user match {
+        case "" =>
+        case "{\n  \"errors\" : [ {\n    \"code\" : 503,\n    \"label\" : \"Service Unavailable\",\n    \"message\" : \"Timeout waiting for connection to CIS.\"\n  } ]\n}" =>
+        case "{\n  \"errors\" : [ {\n    \"code\" : 429\n  } ]\n}" => Event("throttled")
+        case _ =>
+
+          val j = Json.parse(user)
+          val jsarray = j \ "persons"
+          jsarray.as[List[JsObject]].foldLeft(List[Person]())((acc: List[Person], item: JsObject) => {
+            val id = (item \ "id").toString().replaceAll("\"", "")
+            val name = (item \ "display" \ "name")
+            val nameText = name match {
+              case x: JsUndefined => "Unknown";
+              case x => x.toString().replaceAll("\"", "").replace("\\", "");
+            }
+            val lifespan = (item \ "display" \ "lifespan")
+            val lifespanText = lifespan match {
+              case x: JsUndefined => "Unknown";
+              case x => x.toString().replaceAll("\"", "").replace("\\", "");
+            }
+            val link = "https://familysearch.org/ark:/61903/4:1:" + id
+            ret = Person(personId, nameText, link = link)
+            val years = lifespanText.split("-")
+            if (years.length > 1) {
+              ret.setBirthYear(parseLifeDate(years(0)))
+              ret.setDeathYear(parseLifeDate(years(1)))
+            } else {
+              ret.setBirthYear("?")
+              ret.setDeathYear("Living")
+            }
+            acc
+          })
+      }
     }
 
     Await.result(future, Duration(90, java.util.concurrent.TimeUnit.SECONDS))
     ret
+  }
+
+  def parseLifeDate(s: String): String = {
+    try {
+      s.toInt
+      s
+    } catch {
+      case e:Exception => "?"
+    }
   }
 
 }

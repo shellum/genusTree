@@ -9,24 +9,37 @@
     <link rel="stylesheet" media="all and (max-width: 600px)" href="@routes.Assets.at("stylesheets/main-small.css")">
     <script src="@routes.Assets.at("javascripts/jquery-1.11.1.min.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("javascripts/d3.min.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("javascripts/duplicates.js")" type="text/javascript"></script>
 </head>
     <body>
         <div id='header-panel'>
-            <span class='header-text'>GenusTree Duplicates</span><img id='header-logo' src="@routes.Assets.at("images/tree.gif")"/>
+            <span class='header-text'>GenusTree Possible Duplicates</span><img id='header-logo' src="@routes.Assets.at("images/tree.gif")"/>
         </div>
         <div id='main-panel'>
             @import java.math.BigInteger; var i=0
             @if(duplicates.size == 0) {
                 No duplicates were found.
                 <br>
-                GenusTree tries to find duplicates based on two people having the same name, and their respective parents having the same name.
+                GenusTree tries to find duplicates based on two people having the same name.
             }
-            <ul id='person-list' class="list-group" style="float:left;width:500px;">
+            <ul id='person-list' class="list-group" style="float:left;width:300px;">
                 @for((p1,p2) <- duplicates) {
+                    <script>
+                    var people = [
+                    {name: "@p1.name", birth: "@p1.birthYear", death: "@p1.deathYear"},
+                    {name: "@p2.name", birth: "@p2.birthYear", death: "@p2.deathYear"}
+
+                    ];
+                    addDuplicate(people, "#74c274");
+
+                    </script>
                     @(i+=1)
-                    <li class="list-group-item left-list-item" style='margin-left:10px;margin-right:10px;'>@i <a href="@p1.link" target="_blank">@p1.name @p1.pid (@p1.lifespan)</a><br>&nbsp;&</bt><a href="@p2.link" target="_blank">@p2.name @p2.pid (@p2.lifespan)</a></li>
+                    <li class="list-group-item left-list-item" style='margin-left:10px;margin-right:10px;'>
+                        @i <a href="@p1.link" target="_blank">@p1.name @p1.pid (@p1.birthYear-@p1.deathYear)</a>
+                    <br>&nbsp;&<a href="@p2.link" target="_blank">@p2.name @p2.pid (@p2.birthYear-@p2.deathYear)</a></li>
                 }
             </ul>
+            <br style="clear:both"/>
         </div>
         <div id='footer-panel'>
             <div id='footer-text'><a href="/privacyPolicy">Privacy Policy</a><a id='logout-link' href="/">Logout</a></div>
