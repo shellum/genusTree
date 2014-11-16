@@ -40,8 +40,8 @@ function addDuplicate(people, barColor) {
     });
 
     people.forEach(function (e) {
-        if (e.birth < min) min = e.birth;
-        if (e.death > max) max = e.death;
+        if (e.birth < min && e.birth!='?' && e.birth!='Living') min = e.birth;
+        if (e.death > max && e.death!='?' && e.death!='Living') max = e.death;
     })
 
     people.forEach(function (e) {
@@ -87,7 +87,7 @@ function addDuplicate(people, barColor) {
         var color2 = barColor;
         var color3 = barColor;
 
-        var grd=context.createLinearGradient(0,0,end-start + margin,0);
+        var grd=context.createLinearGradient(start,0,end,0);
 
         if (e.birth != 'undefined' && e.birth == '?')
             color1 = 'white';

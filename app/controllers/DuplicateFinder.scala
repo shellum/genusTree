@@ -19,7 +19,7 @@ object DuplicateFinder extends Controller {
     val token = baseUserForm.bindFromRequest.get.token
     val pid = baseUserForm.bindFromRequest.get.pid
 
-    val allPeople = FamilySearch.getAllPeople(3, 2, pid, token).distinct
+    val allPeople = FamilySearch.getAllPeople(8, 1, pid, token).distinct
 
     var ancestryNumberToPersonMap: Map[String, Person] = Map()
 

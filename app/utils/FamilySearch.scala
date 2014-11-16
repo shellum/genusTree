@@ -148,7 +148,7 @@ object FamilySearch {
 
     var descendantFutures: List[Future[List[Person]]] = List()
     allPeople.foreach(p => {
-      Thread.sleep(10000)
+      Thread.sleep(10)
       descendantFutures = future {
         getDescendants(token, p.pid, descendingGenerations)
       } :: descendantFutures
