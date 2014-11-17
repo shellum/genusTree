@@ -41,8 +41,16 @@ function addDuplicate(people, barColor) {
 
     people.forEach(function (e) {
         if (e.birth < min && e.birth!='?' && e.birth!='Living') min = e.birth;
+        if (e.death < min && e.death!='?' && e.death!='Living') min = e.death;
+
         if (e.death > max && e.death!='?' && e.death!='Living') max = e.death;
+        if (e.birth > max && e.birth!='?' && e.birth!='Living') max = e.birth;
     })
+
+
+    people.forEach(function (e) {
+        if (e.birth == max) max = parseInt(max)+1;
+    });
 
     people.forEach(function (e) {
         var start = 0;
@@ -75,11 +83,12 @@ function addDuplicate(people, barColor) {
         // Is the life bar shorter than the name?
         if ((end - start) < nameTextWidth) {
             // Move out the death text
-            nameTransform = nameTextWidth - (end - start) + textMargin;
+            if (e.death != 'undefined' && e.death !='?')
+                nameTransform = nameTextWidth - (end - start) + textMargin;
             // Are we going out of bounds?
             if (end + nameTextWidth + textWidthB >  width) {
                 start -= ((end+nameTextWidth + textWidthB + textMargin*5) - width);
-                end -= ((end+nameTextWidth + textWidthB + textMargin*5) - width);
+                //end -= ((end+nameTextWidth + textWidthB + textMargin*5) - width);
             }
         }
 
@@ -102,8 +111,8 @@ function addDuplicate(people, barColor) {
         text(context, start - textWidthA - textMargin, nextBlockY + textHeight+ textMargin, "#000000", "Birth:");
         text(context, start - textWidthB - textMargin, nextBlockY + textHeight*2+ textMargin*2, "#000000", birth);
 
-        text(context, end + textMargin + nameTransform, nextBlockY+ textHeight+ textMargin, "#000000", "Death:");
-        text(context, end + textMargin + nameTransform, nextBlockY+ textHeight*2+ textMargin*2, "#000000", death);
+        text(context, end + textMargin+nameTransform, nextBlockY+ textHeight+ textMargin, "#000000", "Death:");
+        text(context, end + textMargin+nameTransform, nextBlockY+ textHeight*2+ textMargin*2, "#000000", death);
         text(context, start + textMargin, nextBlockY + textHeight + textMargin, "#000000", e.name);
         nextBlockY += (blockHeight + spaceBetweenBlocks);
     });

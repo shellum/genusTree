@@ -20,8 +20,8 @@
             @if(duplicates.size == 0) {
                 No duplicates were found.
                 <br>
-                GenusTree tries to find duplicates based on two people having the same name.
             }
+            GenusTree tries to find duplicates based on two people having the same name within the last five generations.
             <ul id='person-list' class="list-group" style="float:left;width:300px;">
                 @for((p1,p2) <- duplicates) {
                     <script>
