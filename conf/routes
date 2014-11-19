@@ -14,4 +14,6 @@ POST        /nameCloudDetails            controllers.NameCloud.nameCloudDetails
 POST        /findDuplicates              controllers.DuplicateFinder.findDuplicates
 POST        /findDuplicateDetails        controllers.DuplicateFinder.findDuplicateDetails
 
+POST        /map                         controllers.Maps.index
+
 GET         /assets/*file                controllers.Assets.at(path="/public", file)

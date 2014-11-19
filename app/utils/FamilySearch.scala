@@ -162,8 +162,8 @@ object FamilySearch {
     allPeople.distinct
   }
 
-  def getLastDescendent(map: Map[String, Person], num: Int, generation: Int): (Person, Int) = {
-    val a = map.get(num.toString)
+  def getLastDescendent(map: Map[Int, Person], num: Int, generation: Int): (Person, Int) = {
+    val a = map.get(num)
     a match {
       case None =>
         getLastDescendent(map, num / 2, generation - 1)
@@ -224,6 +224,13 @@ object FamilySearch {
               ret.setBirthYear("?")
               ret.setDeathYear("Living")
             }
+            val facts = (item \ "facts")
+            facts.as[List[JsObject]].foreach(fact=> {
+              val place = (fact \ "place" \ "original").toString().replaceAll("\"", "").replace("\\", "")
+              if (ret.place == "?")
+                ret.place = place
+             // println(name+": "+place)
+            })
             acc
           })
       }

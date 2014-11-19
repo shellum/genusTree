@@ -5,6 +5,7 @@ case class Person(pid: String, name: String = "", gender: String = "", parent: O
   var altName = ""
   var birthYear = "?"
   var deathYear = "?"
+  var place = "?"
 
   override def hashCode(): Int = pid.hashCode()
 
