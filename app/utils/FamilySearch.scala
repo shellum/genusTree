@@ -199,7 +199,6 @@ object FamilySearch {
         case "{\n  \"errors\" : [ {\n    \"code\" : 503,\n    \"label\" : \"Service Unavailable\",\n    \"message\" : \"Timeout waiting for connection to CIS.\"\n  } ]\n}" =>
         case "{\n  \"errors\" : [ {\n    \"code\" : 429\n  } ]\n}" => Event("throttled")
         case _ =>
-
           val j = Json.parse(user)
           val jsarray = j \ "persons"
           jsarray.as[List[JsObject]].foldLeft(List[Person]())((acc: List[Person], item: JsObject) => {

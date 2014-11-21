@@ -3,13 +3,12 @@ package controllers
 import java.util.concurrent.TimeUnit
 
 import models.Person
-import org.apache.commons.lang3.StringEscapeUtils
 import play.api.data.Forms._
 import play.api.data._
 import play.api.libs.json.{JsObject, Json}
 import play.api.libs.ws.WS
 import play.api.mvc._
-import utils.{FamilySearch, Timer}
+import utils.{FamilySearch, Mongo, Timer}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
@@ -22,7 +21,7 @@ object Maps extends Controller {
     val pid = userForm.bindFromRequest.get.pid
     val nameList = userForm.bindFromRequest.get.nameList
 
-    val generations = 6
+    val generations = 5
     var allPeople = FamilySearch.getAllPeople(generations, 0, pid, token).distinct
     val ascendencyMap = getAscendencyToPersonMap(allPeople)
 
@@ -58,7 +57,7 @@ object Maps extends Controller {
       peopleDetails = p :: peopleDetails
     }))
 
-    Await.result(f, Duration(90, TimeUnit.SECONDS))
+    Await.result(f, Duration(900, TimeUnit.SECONDS))
 
     var json = "["
     var placeMap: Map[String, (String, String)] = Map()
@@ -69,10 +68,13 @@ object Maps extends Controller {
         val detailedPerson = getDetailedPerson(p.pid, peopleDetails)
 
         if (detailedPerson.place != null && detailedPerson.place != "?" && !detailedPerson.place.contains("JsUndefined")) {
-          val latlon = getLatLong(detailedPerson.place, placeMap)
+          val place = detailedPerson.place.trim.replaceAll("  ", " ").replaceAll(",,", ",")
+          val latlon = getLatLong(place, placeMap)
           placeMap = latlon._3
-          if (latlon._1 != "" && latlon._2 != "")
-            json = json + "{name:\"" + detailedPerson.name + "\",place:\"" + detailedPerson.place + "\", lat:\"" + latlon._1 + "\", lon:\"" + latlon._2 + "\"},"
+          if (latlon._1 != "" && latlon._2 != "") {
+            println(detailedPerson.place + " vs " + place + " : " + latlon._1 + "," + latlon._2)
+            json = json + "{name:\"" + detailedPerson.name + "\",place:\"" + place + "\", lat:\"" + latlon._1 + "\", lon:\"" + latlon._2 + "\",link:\"" + detailedPerson.link + "\"},"
+          }
         }
       })
       json = json.substring(0, json.length - 1)
@@ -85,32 +87,55 @@ object Maps extends Controller {
     Ok(views.html.map(json))
   }
 
-  def getLatLong(address: String, map: Map[String, (String, String)]): (String, String, Map[String,(String,String)]) = {
-    val timer = Timer("getGeocode")
+  def hasOnlyAsciiLetters(str: String): Boolean = {
+    val chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,"
+    var ret = true
+    str.getBytes.foreach(b => {
+      if (!chars.contains(b))
+        ret = false
+    })
+    ret
+  }
+
+  def getEscapedString(str: String): String = {
+    str.replaceAll("<", "").replaceAll(">", "").replaceAll(" ", "%20")
+  }
+
+  def getLatLong(address: String, map: Map[String, (String, String)]): (String, String, Map[String, (String, String)]) = {
+    val timer = Timer("getGeocode " + address)
     var lat = ""
     var lon = ""
     var newMap = map
     map.get(address) match {
 
-      case Some(x) => (x._1,x._2,map)
+      case Some(x) =>
+        (x._1, x._2, map)
       case None =>
-        Thread.sleep(250);
-    //     ESCAPE THE ADDRESS MYSELF, INFER LOCATION?
-        val future = WS.url("http://maps.googleapis.com/maps/api/geocode/json?sensor=false&address=" + StringEscapeUtils.escapeHtml4(address.replaceAll(" ","%20")))
-          .get().map {
-          response =>
-            timer.logTime()
-            val user = response.body
-            val j = Json.parse(user)
-            val jsarray = j \ "results"
-            jsarray.as[List[JsObject]].foldLeft(List[Person]())((acc: List[Person], item: JsObject) => {
-              lat = (item \ "geometry" \ "location" \ "lat").toString().replaceAll("\"", "")
-              lon = (item \ "geometry" \ "location" \ "lng").toString().replaceAll("\"", "")
-              acc
-            })
+        val latlon = Mongo.getLatLon(address)
+        if (latlon == null) {
+          Thread.sleep(150);
+          //     ESCAPE THE ADDRESS MYSELF, INFER LOCATION?
+          val future = WS.url("http://maps.googleapis.com/maps/api/geocode/json?sensor=false&address=" + getEscapedString(address))
+            .get().map {
+            response =>
+              timer.logTime()
+              val user = response.body
+              val j = Json.parse(user)
+              val jsarray = j \ "results"
+              jsarray.as[List[JsObject]].foldLeft(List[Person]())((acc: List[Person], item: JsObject) => {
+                lat = (item \ "geometry" \ "location" \ "lat").toString().replaceAll("\"", "")
+                lon = (item \ "geometry" \ "location" \ "lng").toString().replaceAll("\"", "")
+                acc
+              })
+          }
+          Await.result(future, Duration(90, java.util.concurrent.TimeUnit.SECONDS))
+          newMap += address ->(lat, lon)
+          Mongo.addPlace(address, lat, lon)
+        } else {
+          lat = latlon._1
+          lon = latlon._2
+          newMap += address ->(lat, lon)
         }
-        Await.result(future, Duration(90, java.util.concurrent.TimeUnit.SECONDS))
-        newMap += address -> (lat,lon)
         (lat, lon, newMap)
     }
   }

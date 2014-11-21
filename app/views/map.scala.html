@@ -116,11 +116,15 @@ $('#map' ).css('height','700px');
         var marker = new google.maps.Marker({
         position: myLatlng,
         map: map,
-        title:(g.name)
+        title:(g.name + " " + g.place)
 
         });
         marker.setMap(map);
+        google.maps.event.addListener(marker, 'click', function() {
 
+        window.open(g.link);
+
+        });
         });
 
         var flightPath = new google.maps.Polyline({

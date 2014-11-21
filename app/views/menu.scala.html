@@ -23,7 +23,7 @@
                     $('#duplicates-form').submit();
                 });
                 $('#map-form').click(function() {
-                    $('#duplicates-button').attr("disabled","disabled");
+                    $('#map-button').attr("disabled","disabled");
                     $('#map-form').submit();
                 });
             });
@@ -56,11 +56,11 @@
                 <input type='button' id='duplicates-button' class="btn btn-success center-block padded-button" value='Find Duplicates'/>
             </form>
             <form id='map-form' style='float:left;margin:10px' action='/map' method='POST'>
-                <img id='name-cloud-image' style='cursor: pointer; cursor: hand;' src="@routes.Assets.at("images/MenuDuplicatesList.png")"/>
+                <img id='name-cloud-image' style='cursor: pointer; cursor: hand;' src="@routes.Assets.at("images/MenuMapAncestors.png")"/>
                 <input type='hidden' name='token' value='@token'/>
                 <input type='hidden' name='pid' value='@personId'/>
                 <input type='hidden' name='nameList' value='@Html(json)'/>
-                <input type='button' id='map-button' class="btn btn-success center-block padded-button" value='Find Duplicates'/>
+                <input type='button' id='map-button' class="btn btn-success center-block padded-button" value='Map Ancestors'/>
             </form>
         </div>
         <div id='footer-panel'>

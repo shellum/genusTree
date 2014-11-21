@@ -5,7 +5,7 @@ import play.api.data._
 import play.api.libs.json.Json
 import play.api.libs.ws.WS
 import play.api.mvc._
-import utils.FamilySearch
+import utils.{Mongo, FamilySearch}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
