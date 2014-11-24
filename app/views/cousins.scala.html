@@ -24,7 +24,7 @@
             <ul id='person-list' class="list-group" style="float:left;width:270px;">
                 @for((p) <- peopleSet) {
                     @(i+=1)
-                    <li class="list-group-item left-list-item" style='margin-left:10px;margin-right:10px;'>@i <a href="@p.link" target="_blank">@p.name @p.altName</a></li>
+                    <li class="list-group-item left-list-item" style='margin-left:10px;margin-right:10px;'>@i <a href="@p.link" target="_blank">@p.name</a></li>
                 }
             </ul>
         </div>

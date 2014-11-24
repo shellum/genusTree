@@ -7,6 +7,10 @@
             var nameList = @Html(nameList);
             $(function () {
                 initAutoComplete();
+                $('#submit-button').click(function () {
+                    $("#nameList" ).val(JSON.stringify(nameList));
+                    submitForm();
+                });
             });
         </script>
     </head>
@@ -21,6 +25,7 @@
             <div>
             <form id='main-form' action='/findDuplicates' method='POST'>
                 <input type='hidden' name='token' value='@token'/>
+                <input type="hidden" name="nameList" id="nameList"/>
                 <input type="hidden" name="action" value="/findDuplicates"/>
                 @autocompleteform(personId)
                 <div class="form-element">

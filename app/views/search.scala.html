@@ -7,6 +7,10 @@
             var nameList = @Html(nameList);
             $(function () {
                 initAutoComplete();
+                $('#submit-button').click(function () {
+                    $("#nameList" ).val(JSON.stringify(nameList));
+                    submitForm();
+                });
             });
         </script>
     </head>
@@ -26,6 +30,7 @@
                         <option value="/getAuntsUncles">Aunts & Uncles</option>
                     </select>
                 </div>
+                <input type="hidden" name="nameList" id="nameList"/>
                 <input type='hidden' name='token' value='@token'/>
                 @autocompleteform(personId)
                 <div class="form-element">

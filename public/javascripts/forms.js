@@ -12,9 +12,6 @@ function initAutoComplete() {
         }
     });
     $('.progress').hide();
-    $('#submit-button').click(function () {
-        submitForm();
-    });
 
     var names = new Bloodhound({
         datumTokenizer: function (d) {

@@ -5,8 +5,10 @@ import models.{ColorScheme, Person, SimplePerson}
 import org.apache.commons.lang3.StringEscapeUtils
 import play.api.data.Form
 import play.api.data.Forms._
+import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
 import utils.FamilySearch
+import models.PersonWrites.fullReads
 
 object NameCloud extends Controller {
 
@@ -17,8 +19,9 @@ object NameCloud extends Controller {
     val unsanitizedFont = nameCloudForm.bindFromRequest.get.font
     val colorScheme = ColorScheme(nameCloudForm.bindFromRequest.get.colorScheme)
     val font = StringEscapeUtils.escapeHtml4(StringEscapeUtils.escapeEcmaScript(unsanitizedFont))
+    val nameList = nameCloudForm.bindFromRequest.get.nameList
 
-    val allPeople = FamilySearch.getAllPeople(generations, generations, pid, token)
+    val allPeople = Json.parse(nameList).as[List[Person]]
 
     var partToNamesMap = Map[String, List[Person]]()
 
@@ -109,10 +112,11 @@ object NameCloud extends Controller {
       "pid" -> text,
       "generations" -> number,
       "font" -> text,
-      "colorScheme" -> number
+      "colorScheme" -> number,
+      "nameList" -> text
     )(NameCloudParams.apply)(NameCloudParams.unapply)
   )
 
-  case class NameCloudParams(token: String, pid: String, generations: Int, font: String, colorScheme: Int)
+  case class NameCloudParams(token: String, pid: String, generations: Int, font: String, colorScheme: Int, nameList: String)
 
 }

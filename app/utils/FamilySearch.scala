@@ -26,7 +26,7 @@ object FamilySearch {
   def getChildren(token: String, selfPid: String, parent: Person): List[Person] = {
     var ret: List[Person] = List[Person]()
     val timer = Timer("getChildren")
-    val future = WS.url(FAMILYSEARCH_SERVER_URL + API_URL_PERSONS + parent.getPid + "/children")
+    val future = WS.url(FAMILYSEARCH_SERVER_URL + API_URL_PERSONS + parent.pid + "/children")
       .withHeaders(("Accept", "application/x-fs-v1+json"), ("Authorization", token))
       .get().map { response =>
       timer.logTime()
@@ -62,7 +62,8 @@ object FamilySearch {
     if (url.contains("descendancy"))
       what = "getDescendants"
     val timer = Timer(what)
-    val future = WS.url(FAMILYSEARCH_SERVER_URL + url + "?person=" + selfPid + "&generations=" + generations)
+    //println("Start ancestor query...")
+    val future = WS.url(FAMILYSEARCH_SERVER_URL + url + "?person=" + selfPid + "&generations=" + generations + "&personDetails=")
       .withHeaders(("Accept", "application/x-fs-v1+json"), ("Authorization", token))
       .get().map { response =>
       timer.logTime()
@@ -83,7 +84,7 @@ object FamilySearch {
             }
             val ancesteryNumber = item \ "display" \ "ascendancyNumber"
             var ancesteryNumberStr = ""
-            if (ancesteryNumber != JsUndefined) ancesteryNumberStr = ancesteryNumber.toString().replaceAll("\"", "")
+            if (!ancesteryNumber.toString().contains("JsUndefined")) ancesteryNumberStr = ancesteryNumber.toString().replaceAll("\"", "")
             val descendancyNumber = item \ "display" \ "descendancyNumber"
             var descendancyNumberStr = ""
             if (descendancyNumber != JsUndefined) descendancyNumberStr = descendancyNumber.toString().replaceAll("\"", "")
@@ -93,7 +94,31 @@ object FamilySearch {
             val firsts = (firstName \ "nameForms")(0)
             val fir = firsts \ "parts"
             val firstNamez = (fir(0) \ "value").toString().replaceAll("\"", "").replace("\\", "").split(" ")(0)
-            val person = Person(id, nameText, gender, None, link = link, firstName = firstNamez, ancestryNumber = ancesteryNumberStr, descendancyNumber = descendancyNumberStr)
+            val lifespan = (item \ "display" \ "lifespan")
+            val lifespanText = lifespan match {
+              case x: JsUndefined => "Unknown";
+              case x => x.toString().replaceAll("\"", "").replace("\\", "");
+            }
+            val years = lifespanText.split("-")
+            var birthYear = "?"
+            var deathYear = "?"
+            if (years.length > 1) {
+              birthYear = parseLifeDate(years(0))
+              deathYear = parseLifeDate(years(1))
+            } else {
+              birthYear = "?"
+              deathYear = "Living"
+            }
+            val facts = (item \ "facts")
+            var place = "?"
+            facts.as[List[JsObject]].foreach(fact=> {
+              val possiblePlace = (fact \ "place" \ "original").toString().replaceAll("\"", "").replace("\\", "")
+              if (place == "?")
+                place = possiblePlace
+              // println(name+": "+place)
+            })
+
+            val person = Person(id, nameText, gender, None, link = link, firstName = firstNamez, ancestryNumber = ancesteryNumberStr, descendancyNumber = descendancyNumberStr, birthYear = birthYear, deathYear = deathYear, place = place)
             person :: acc
           })
       }
@@ -148,14 +173,14 @@ object FamilySearch {
 
     var descendantFutures: List[Future[List[Person]]] = List()
     allPeople.foreach(p => {
-      Thread.sleep(10)
+    //  Thread.sleep(10)
       descendantFutures = future {
         getDescendants(token, p.pid, descendingGenerations)
       } :: descendantFutures
     })
 
     val f = Future.sequence(descendantFutures).map(futureList => futureList.foreach(singleFuture =>
-      allPeople = (singleFuture ::: allPeople).distinct)
+      allPeople = (allPeople ::: singleFuture).distinct)
     )
     Await.result(f, Duration(90, TimeUnit.SECONDS))
 
@@ -180,59 +205,6 @@ object FamilySearch {
       .get().map { response =>
       timer.logTime()
       ret = response.body
-    }
-
-    Await.result(future, Duration(90, java.util.concurrent.TimeUnit.SECONDS))
-    ret
-  }
-
-  def getPerson(token: String, personId: String) = {
-    var ret = Person("")
-    val timer = Timer("getPerson")
-    val future = WS.url(FamilySearch.FAMILYSEARCH_SERVER_URL + "/platform/tree/persons/" + personId)
-      .withHeaders(("Accept", "application/x-gedcomx-v1+json"), ("Authorization", token))
-      .get().map { response =>
-      timer.logTime()
-      val user = response.body
-      user match {
-        case "" =>
-        case "{\n  \"errors\" : [ {\n    \"code\" : 503,\n    \"label\" : \"Service Unavailable\",\n    \"message\" : \"Timeout waiting for connection to CIS.\"\n  } ]\n}" =>
-        case "{\n  \"errors\" : [ {\n    \"code\" : 429\n  } ]\n}" => Event("throttled")
-        case _ =>
-          val j = Json.parse(user)
-          val jsarray = j \ "persons"
-          jsarray.as[List[JsObject]].foldLeft(List[Person]())((acc: List[Person], item: JsObject) => {
-            val id = (item \ "id").toString().replaceAll("\"", "")
-            val name = (item \ "display" \ "name")
-            val nameText = name match {
-              case x: JsUndefined => "Unknown";
-              case x => x.toString().replaceAll("\"", "").replace("\\", "");
-            }
-            val lifespan = (item \ "display" \ "lifespan")
-            val lifespanText = lifespan match {
-              case x: JsUndefined => "Unknown";
-              case x => x.toString().replaceAll("\"", "").replace("\\", "");
-            }
-            val link = "https://familysearch.org/ark:/61903/4:1:" + id
-            ret = Person(personId, nameText, link = link)
-            val years = lifespanText.split("-")
-            if (years.length > 1) {
-              ret.setBirthYear(parseLifeDate(years(0)))
-              ret.setDeathYear(parseLifeDate(years(1)))
-            } else {
-              ret.setBirthYear("?")
-              ret.setDeathYear("Living")
-            }
-            val facts = (item \ "facts")
-            facts.as[List[JsObject]].foreach(fact=> {
-              val place = (fact \ "place" \ "original").toString().replaceAll("\"", "").replace("\\", "")
-              if (ret.place == "?")
-                ret.place = place
-             // println(name+": "+place)
-            })
-            acc
-          })
-      }
     }
 
     Await.result(future, Duration(90, java.util.concurrent.TimeUnit.SECONDS))

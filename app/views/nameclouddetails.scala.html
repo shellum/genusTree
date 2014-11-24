@@ -7,7 +7,11 @@
         var nameList = @Html(nameList);
         $(function () {
                 initAutoComplete();
-            });
+                $('#submit-button').click(function () {
+                    $("#nameList" ).val(JSON.stringify(nameList));
+                    submitForm();
+                });
+        });
         </script>
     </head>
     <body>
@@ -22,6 +26,7 @@
             <form id='main-form' action='/nameCloud' method='POST'>
                 <input type="hidden" name="action" value="/nameCloud"/>
                 <input type='hidden' name='token' value='@token'/>
+                <input type="hidden" name="nameList" id="nameList"/>
                 <div class="form-element field-width">
                     Number of generations:
                     <select name="generations" class="form-control">

@@ -6,12 +6,14 @@ import controllers.Auth._
 import models.Person
 import play.api.data.Form
 import play.api.data.Forms._
+import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
 import utils.FamilySearch
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import scala.concurrent.duration.Duration
+import models.PersonWrites.fullReads
 
 object SingleGeneration extends Controller {
   def search = Action {
@@ -24,12 +26,12 @@ object SingleGeneration extends Controller {
     }
   }
 
-  def getCousinTree(token: String, pid: String): (Person, List[Person]) = {
+  def getCousinTree(token: String, pid: String, allPeople: List[Person]): (Person, List[Person]) = {
     var addedCousins: Map[String, Person] = Map[String, Person]()
     val grandparentSet = Person("")
 
-    val grandparents = FamilySearch.getAncestors(token, pid, 2, FamilySearch.API_URL_ANCESTRY).filter(p => {
-      !p.ancestryNumber.contains("S") && p.ancestryNumber.toInt > 3
+    val grandparents = allPeople.filter(p => {
+      !p.ancestryNumber.contains("S") && p.ancestryNumber != "" && p.ancestryNumber.toInt > 3 && p.ancestryNumber.toInt < 8
     })
 
     //Get Aunts and Uncles
@@ -61,11 +63,12 @@ object SingleGeneration extends Controller {
           var toRemove = List[Person]()
           singleAuntUncleChildren.foreach((cousin) => {
             val addedCousin = addedCousins.get(cousin.pid).getOrElse(Person(""))
-            if (addedCousin.getPid == "") {
-              addedCousins += (cousin.getPid() -> cousin)
+            if (addedCousin.pid == "") {
+              addedCousins += (cousin.pid -> cousin)
             }
             else {
-              addedCousin.parent.get.altName = " & " + cousin.parent.get.name
+              // TODO: make sure both parent names are displayed
+              //addedCousin.parent.get.altName = " & " + cousin.parent.get.name
               grandparentSet.removeDescendant(cousin.parent.get)
               toRemove = cousin :: toRemove
             }
@@ -97,7 +100,7 @@ object SingleGeneration extends Controller {
     val token = baseUserForm.bindFromRequest.get.token
     val pid = baseUserForm.bindFromRequest.get.pid
 
-    val treeTuple = getCousinTree(token, pid)
+    val treeTuple = getCousinTree(token, pid, null)
     val grandparentSet = treeTuple._1
 
     // Remove descendants of Aunts/Uncles unless they are the user in question
@@ -113,17 +116,20 @@ object SingleGeneration extends Controller {
         p.removeOtherDescendants(pid)
     })
 
-    val auntUncleList = grandparentSet.getDescendants().filter(p => p.getDescendants().size == 0).sortBy(_.getName())
+    val auntUncleList = grandparentSet.getDescendants().filter(p => p.getDescendants().size == 0).sortBy(_.name)
     val json = grandparentSet.toJson
 
     Ok(views.html.cousins("Aunts & Uncles", auntUncleList.sorted, auntUncleList.size, json.toString(), FamilySearch.FAMILYSEARCH_SERVER_URL, token))
   }
 
   def getCousins() = Action { implicit request =>
-    val token = baseUserForm.bindFromRequest.get.token
-    val pid = baseUserForm.bindFromRequest.get.pid
+    val token = userForm.bindFromRequest.get.token
+    val pid = userForm.bindFromRequest.get.pid
+    val nameList = userForm.bindFromRequest.get.nameList
 
-    val treeTuple = getCousinTree(token, pid)
+    val allPeople = Json.parse(nameList).as[List[Person]]
+
+    val treeTuple = getCousinTree(token, pid, allPeople)
     val grandparentSet = treeTuple._1
     var cousinList = List[Person]()
 
@@ -138,7 +144,7 @@ object SingleGeneration extends Controller {
       cousinList = p.getDescendants() ::: cousinList
     })
 
-    cousinList = cousinList.sortBy(_.getName())
+    cousinList = cousinList.sortBy(_.name)
     cousinList = cousinList.filter(p => p.pid != pid)
 
     val json = gps.toJson

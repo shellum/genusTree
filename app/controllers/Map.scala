@@ -13,7 +13,7 @@ import utils.{FamilySearch, Mongo, Timer}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import scala.concurrent.duration.Duration
-
+import models.PersonWrites.fullReads
 object Maps extends Controller {
 
   def index = Action { implicit request =>
@@ -22,7 +22,7 @@ object Maps extends Controller {
     val nameList = userForm.bindFromRequest.get.nameList
 
     val generations = 5
-    var allPeople = FamilySearch.getAllPeople(generations, 0, pid, token).distinct
+    var allPeople = Json.parse(nameList).as[List[Person]]
     val ascendencyMap = getAscendencyToPersonMap(allPeople)
 
     var listOfPaths: List[List[Person]] = List()
@@ -44,36 +44,21 @@ object Maps extends Controller {
     })
 
 
-    allPeople = allPeople.distinct
-    var peopleDetails: List[Person] = List()
-    var duplicateFutures: List[Future[Person]] = List()
-    allPeople.foreach(p => {
-      duplicateFutures = future {
-        FamilySearch.getPerson(token, p.pid)
-      } :: duplicateFutures
-    })
-
-    val f = Future.sequence(duplicateFutures).map(futureList => futureList.foreach(p => {
-      peopleDetails = p :: peopleDetails
-    }))
-
-    Await.result(f, Duration(900, TimeUnit.SECONDS))
-
     var json = "["
     var placeMap: Map[String, (String, String)] = Map()
 
     listOfPaths.foreach(path => {
       json += "["
       path.foreach(p => {
-        val detailedPerson = getDetailedPerson(p.pid, peopleDetails)
+        //val detailedPerson = getDetailedPerson(p.pid, peopleDetails)
 
-        if (detailedPerson.place != null && detailedPerson.place != "?" && !detailedPerson.place.contains("JsUndefined")) {
-          val place = detailedPerson.place.trim.replaceAll("  ", " ").replaceAll(",,", ",")
+        if (p.place != null && p.place != "?" && !p.place.contains("JsUndefined")) {
+          val place = p.place.trim.replaceAll("  ", " ").replaceAll(",,", ",")
           val latlon = getLatLong(place, placeMap)
           placeMap = latlon._3
           if (latlon._1 != "" && latlon._2 != "") {
-            println(detailedPerson.place + " vs " + place + " : " + latlon._1 + "," + latlon._2)
-            json = json + "{name:\"" + detailedPerson.name + "\",place:\"" + place + "\", lat:\"" + latlon._1 + "\", lon:\"" + latlon._2 + "\",link:\"" + detailedPerson.link + "\"},"
+           // println(p.place + " vs " + place + " : " + latlon._1 + "," + latlon._2)
+            json = json + "{name:\"" + p.name + "\",place:\"" + place + "\", lat:\"" + latlon._1 + "\", lon:\"" + latlon._2 + "\",link:\"" + p.link + "\"},"
           }
         }
       })

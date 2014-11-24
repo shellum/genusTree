@@ -1,11 +1,16 @@
 package controllers
 
+import java.util.concurrent.TimeUnit
+
+import models.{PersonWrites, Person}
 import play.api.data.Forms._
 import play.api.data._
 import play.api.libs.json.Json
 import play.api.libs.ws.WS
 import play.api.mvc._
 import utils.{Mongo, FamilySearch}
+import play.api.libs.json.Writes.list
+import PersonWrites.fullWrites
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
@@ -26,14 +31,8 @@ object Auth extends Controller {
     val pid = nameListForm.bindFromRequest.get.pid
     val generations = nameListForm.bindFromRequest.get.generations
 
-    val allPeople = FamilySearch.getAllPeople(4, 1, pid, token).distinct
-    var json = "["
-    allPeople.distinct.foreach(p => {
-      json = json + "{name:\"" + p.name + "\",pid:\"" + p.pid + "\"},"
-    })
-    json = json.substring(0, json.length - 1)
-    json = json + "]"
-    json = json.replace("'", "")
+    val allPeople = FamilySearch.getAllPeople(5, 1, pid, token).distinct
+    val json = Json.toJson(allPeople)
     Ok(json).as(TEXT)
   }
 
@@ -41,7 +40,7 @@ object Auth extends Controller {
     implicit request => {
       val token = userForm.bindFromRequest.get.token
       val pid = userForm.bindFromRequest.get.pid
-      val nameList = userForm.bindFromRequest.get.nameList
+      val nameList = userForm.bindFromRequest.get.nameList.replaceAll("'","")
 
       Ok(views.html.menu(token, pid, nameList))
     }
