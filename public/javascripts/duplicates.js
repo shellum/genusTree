@@ -4,17 +4,17 @@ function addDuplicate(people, barColor) {
     description.innerHTML = people[0].name + " & " + people[1].name + " could be the same person.";
     description.style.float='right';
     description.style.clear='right';
-    var d = document.getElementById("main-panel");
+    var d = document.getElementById("page");
     d.appendChild(description);
     var canvas = document.createElement('canvas');
     canvas.id = "canvas" + i;
-    canvas.width=550;
+    canvas.width=500;
     canvas.height=135;
     canvas.style.float='right';
     canvas.style.clear='right';
     canvas.style.paddingRight='10px';
     canvas.style.paddingBottom='20px';
-    var d = document.getElementById("main-panel");
+    var d = document.getElementById("page");
     d.appendChild(canvas);
 
     var margin = 50;

@@ -1,16 +1,13 @@
 package controllers
 
-import java.util.concurrent.TimeUnit
-
-import models.{PersonWrites, Person}
+import models.PersonWrites
+import models.PersonWrites.fullWrites
 import play.api.data.Forms._
 import play.api.data._
 import play.api.libs.json.Json
 import play.api.libs.ws.WS
 import play.api.mvc._
-import utils.{Mongo, FamilySearch}
-import play.api.libs.json.Writes.list
-import PersonWrites.fullWrites
+import utils.FamilySearch
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
@@ -31,8 +28,8 @@ object Auth extends Controller {
     val pid = nameListForm.bindFromRequest.get.pid
     val generations = nameListForm.bindFromRequest.get.generations
 
-    val allPeople = FamilySearch.getAllPeople(5, 1, pid, token).distinct
-    val json = Json.toJson(allPeople)
+    val allPeople = FamilySearch.getAllPeople(4, 1, pid, token).distinct
+    val json = Json.toJson(allPeople).toString()
     Ok(json).as(TEXT)
   }
 
@@ -40,7 +37,7 @@ object Auth extends Controller {
     implicit request => {
       val token = userForm.bindFromRequest.get.token
       val pid = userForm.bindFromRequest.get.pid
-      val nameList = userForm.bindFromRequest.get.nameList.replaceAll("'","")
+      val nameList = userForm.bindFromRequest.get.nameList.replaceAll("'", "")
 
       Ok(views.html.menu(token, pid, nameList))
     }
@@ -57,7 +54,7 @@ object Auth extends Controller {
       ret = response.body
     }
 
-    Await.result(future, Duration(90, java.util.concurrent.TimeUnit.SECONDS))
+    Await.result(future, Duration(190, java.util.concurrent.TimeUnit.SECONDS))
     val json = Json.parse(ret)
 
     (json \ "access_token").asOpt[String] match {
@@ -74,6 +71,14 @@ object Auth extends Controller {
         Ok(views.html.loading(token, personId))
     }
   }
+
+  def reprocessToken = Action { implicit request =>
+    val token: String = request.getQueryString("token").getOrElse("")
+    val personId: String = request.getQueryString("pid").getOrElse("")
+
+    Ok(views.html.loading(token, personId))
+  }
+
 
   val userForm = Form(
     mapping(

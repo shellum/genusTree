@@ -113,7 +113,7 @@ object Maps extends Controller {
                 acc
               })
           }
-          Await.result(future, Duration(90, java.util.concurrent.TimeUnit.SECONDS))
+          Await.result(future, Duration(190, java.util.concurrent.TimeUnit.SECONDS))
           newMap += address ->(lat, lon)
           Mongo.addPlace(address, lat, lon)
         } else {

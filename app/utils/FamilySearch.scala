@@ -4,7 +4,7 @@ import java.util.concurrent.TimeUnit
 
 import models.Person
 import play.api.Play
-import play.api.libs.json.{JsObject, JsUndefined, Json}
+import play.api.libs.json.{JsNull, JsObject, JsUndefined, Json}
 import play.api.libs.ws.WS
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -52,7 +52,7 @@ object FamilySearch {
           })
       }
     }
-    Await.result(future, Duration(90, java.util.concurrent.TimeUnit.SECONDS))
+    Await.result(future, Duration(190, java.util.concurrent.TimeUnit.SECONDS))
     ret
   }
 
@@ -73,7 +73,12 @@ object FamilySearch {
         case "{\n  \"errors\" : [ {\n    \"code\" : 503,\n    \"label\" : \"Service Unavailable\",\n    \"message\" : \"Timeout waiting for connection to CIS.\"\n  } ]\n}" =>
         case "{\n  \"errors\" : [ {\n    \"code\" : 429\n  } ]\n}" => Event("throttled")
         case _ =>
-          val json = Json.parse(body)
+          println(body)
+          var json = Json.parse("{}")
+          try {json = Json.parse(body)} catch {
+            case e: Throwable=>
+              json = Json.parse("{}");
+          }
           val jsarray = json \ "persons"
           ret = jsarray.as[List[JsObject]].foldLeft(List[Person]())((acc: List[Person], item: JsObject) => {
             val id = (item \ "id").toString().replaceAll("\"", "")
@@ -123,7 +128,7 @@ object FamilySearch {
           })
       }
     }
-    Await.result(future, Duration(90, java.util.concurrent.TimeUnit.SECONDS))
+    Await.result(future, Duration(190, java.util.concurrent.TimeUnit.SECONDS))
     ret
   }
 
@@ -152,7 +157,7 @@ object FamilySearch {
         allPeople = singleFuture ::: allPeople
         generationList = singleFuture ::: generationList
       }))
-      Await.result(f, Duration(90, TimeUnit.SECONDS))
+      Await.result(f, Duration(190, TimeUnit.SECONDS))
 
       nextGenToFollow = generationList
     })
@@ -182,7 +187,7 @@ object FamilySearch {
     val f = Future.sequence(descendantFutures).map(futureList => futureList.foreach(singleFuture =>
       allPeople = (allPeople ::: singleFuture).distinct)
     )
-    Await.result(f, Duration(90, TimeUnit.SECONDS))
+    Await.result(f, Duration(190, TimeUnit.SECONDS))
 
     allPeople.distinct
   }
@@ -207,7 +212,7 @@ object FamilySearch {
       ret = response.body
     }
 
-    Await.result(future, Duration(90, java.util.concurrent.TimeUnit.SECONDS))
+    Await.result(future, Duration(190, java.util.concurrent.TimeUnit.SECONDS))
     ret
   }
 

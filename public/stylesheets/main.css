@@ -1,6 +1,6 @@
 #header-panel {
     margin: 20px auto auto auto;
-    width: 900px;
+    width: 1000px;
     height: 50px;
     background-color: #f8f8f8;
     color: #4f5f2b;
@@ -15,11 +15,31 @@
 
 .subtitle {
     color: #4f5f2b;
+    margin: 0px auto 0px auto;
+    padding: 10px 0px 10px 0px;
+}
+
+.link {
+    color: rgb(26, 178, 97);
+    text-decoration: none;
+    cursor: pointer; cursor: hand;
+    text-align: left;
+    padding: 10px 10px 10px 10px;
+}
+
+.link :hover {
+    color: rgb(66, 218, 137);
+    text-decoration: underline;
+    cursor: pointer; cursor: hand;
+}
+
+.no-padding {
+    padding: 0px;
 }
 
 #footer-panel {
     margin: 0px auto auto auto;
-    width: 900px;
+    width: 1000px;
     height: 30px;
     background-color: #f8f8f8;
     color: #4f5f2b;
@@ -30,11 +50,28 @@
 
 .form-element {
     text-align: left;
-    padding:10px 0px 0px 10px;
+    padding:10px 10px 0px 10px;
 }
 
 .field-width {
-    width: 50%;
+}
+#page {
+    width: 820px;
+    float: right;
+    position: relative;
+}
+
+.sidebar-name-list {
+    width:  300px;
+    position: absolute;
+    right: 0px;
+}
+
+.main-menu-item {
+    border: #4f5f2b 1px solid;
+    width: 180px;
+    float:left;
+    clear:left;
 }
 
 .padded-button {
@@ -65,9 +102,9 @@
 
 #main-panel {
     margin: 0px auto auto auto;
-    width: 900px;
+    width: 1000px;
 
-    background: -webkit-linear-gradient(left bottom, #FFFDEB 25%, #E7F8EA, #c9e3d9 75%, #FBFCF4);
+    background: #DDEEDD;
     text-align:center;
 }
 

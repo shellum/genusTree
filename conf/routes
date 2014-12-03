@@ -1,5 +1,6 @@
 GET         /                            controllers.Auth.index
 GET         /oauth/token                 controllers.Auth.processToken
+GET         /reprocessToken              controllers.Auth.reprocessToken
 GET         /privacyPolicy               controllers.Auth.privacyPolicy
 POST        /menu                        controllers.Auth.menu
 POST        /getNameList                 controllers.Auth.getNameList

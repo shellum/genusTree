@@ -27,7 +27,7 @@
                 <input type='hidden' name='token' value='@token'/>
                 <input type="hidden" name="nameList" id="nameList"/>
                 <input type="hidden" name="action" value="/findDuplicates"/>
-                @autocompleteform(personId)
+                @autocompleteform(personId, token)
                 <div class="form-element">
                     <input type='button' id='submit-button' class="btn btn-success" value='Search'/>
                 </div>

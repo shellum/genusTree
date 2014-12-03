@@ -20,9 +20,8 @@ object SingleGeneration extends Controller {
     implicit request => {
       val token = userForm.bindFromRequest.get.token
       val pid = userForm.bindFromRequest.get.pid
-      val nameList = userForm.bindFromRequest.get.nameList
 
-      Ok(views.html.search(token, pid, nameList))
+      Ok(views.html.setupGeneration(token, pid))
     }
   }
 
@@ -45,7 +44,7 @@ object SingleGeneration extends Controller {
     val allAuntUncleFutures = Future.sequence(auntUncleFutures).map {
       lst => lst.foreach(l => grandparentSet.addDescendants(l))
     }
-    Await.result(allAuntUncleFutures, Duration(90, TimeUnit.SECONDS))
+    Await.result(allAuntUncleFutures, Duration(190, TimeUnit.SECONDS))
 
     // Get cousins
     var cousinFutures = List[Future[List[Person]]]()
@@ -84,7 +83,7 @@ object SingleGeneration extends Controller {
       }
     }
 
-    Await.result(allCousinFutures, Duration(90, TimeUnit.SECONDS))
+    Await.result(allCousinFutures, Duration(190, TimeUnit.SECONDS))
 
     val cousinList = allCousins.foldLeft(List[Person]())((acc, item) => {
       if (item.pid != pid)

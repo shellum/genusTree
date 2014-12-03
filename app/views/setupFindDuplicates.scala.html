@@ -1,0 +1,12 @@
+@(token: String, personId: String)
+<form id='findDuplicates-form' action='/findDuplicates' method='POST'>
+    <input type='hidden' name='token' value='@token'/>
+    <input type='hidden' name='pid' value='@personId'/>
+    <input type="hidden" name="nameList" id="findDuplicates-nameList"/>
+    <input type="hidden" name="action" value="/findDuplicates"/>
+    <div class="form-element">
+        <input type='button' id='findDuplicates-button' class="btn btn-success" value='Search'/>
+    </div>
+    <br>
+</form>
+

@@ -1,9 +1,16 @@
-@(personId: String)
-<div class="form-element field-width">
-    FamilySearch ID for starting point (default is you):
-    <input type='text' class="form-control typeahead tt-query" spellcheck="false" id='pid' name='pid' value='@personId'/>
-</div>
-<div class="form-element field-width">
-    Search for a FamilySearch ID using a name:
-    <input type='text' class="form-control typeahead tt-query" autocomplete="off" spellcheck="false" id='name' name='name' value=''/>
-</div>
+@(personId: String, token: String)
+<form method="GET" action="/reprocessToken" id="changeUser-form">
+    <div class="form-element field-width">
+    FamilySearch ID:
+        <input type='text' class="form-control typeahead tt-query" spellcheck="false" id='pid' name='pid' value='@personId'/>
+        <input type='hidden' name='token' value='@token'/>
+    </div>
+    <div class="form-element field-width">
+    Find an ID by name:
+        <input type='text' class="form-control typeahead tt-query" autocomplete="off" spellcheck="false" id='name' name='name' value=''/>
+    </div>
+    <div class="form-element">
+        <input type='button' id='changeUser-button' class="btn btn-success" value='Go'/>
+    </div>
+</form>
+<br/>

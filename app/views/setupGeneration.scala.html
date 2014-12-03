@@ -1,0 +1,17 @@
+@(token: String, personId: String)
+            <form id='generation-form' action='/getCousins' method='POST'>
+                <div class="form-element field-width">
+                    Generation type:
+                    <select id="action" class="form-control">
+                        <option value="/getCousins" selected="selected">Cousins</option>
+                        <option value="/getAuntsUncles">Aunts & Uncles</option>
+                    </select>
+                </div>
+                <input type="hidden" name="pid" value="@personId"/>
+                <input type="hidden" name="nameList" id="generation-nameList"/>
+                <input type='hidden' name='token' value='@token'/>
+                <div class="form-element">
+                    <input type='button' id='generation-button' class="btn btn-success" value='Search!'/>
+                </div>
+                <br>
+            </form>
