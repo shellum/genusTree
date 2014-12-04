@@ -24,11 +24,11 @@
                     <div class='header-text'>GenusTree</div><span id='sign-in-button' class='btn btn-success' style='background-color:#28a301'>Sign In via FamilySearch</span>
                 </div>
                 <div id='main-panel'>
-                    <img src="@routes.Assets.at("images/tree.gif")" class='tree'>
+                    <img src="@routes.Assets.at("images/tree.png")" class='tree'>
                     <input type='hidden' name='response_type' value='code'/>
                     <input type='hidden' name='redirect_uri' value='@play.Play.application().configuration().getString("familysearch.callback.url")'/>
                     <input type='hidden' name='client_id' value='@play.Play.application().configuration().getString("familysearch.developer.id")'/>
-                    <h4 class='subtitle'>see your ancestors in context</h4>
+                    <h4 class='subtitle'>visualize your ancestors in context</h4>
                 </div>
                 <div id='footer-panel'>
                     <div id='footer-text'><a class='link no-padding' id='privacy-policy-link' href="/privacyPolicy">Privacy Policy</a><a class='link no-padding' id='logout-link' href="mailto:genustree@@gmail.com">Contact/Feedback</a></div>

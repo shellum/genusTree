@@ -68,10 +68,19 @@
 }
 
 .main-menu-item {
+    position: relative;
     border: #4f5f2b 1px solid;
     width: 180px;
     float:left;
     clear:left;
+}
+
+.main-menu-image {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    top: 0px;
+    right: 0px;
 }
 
 .padded-button {

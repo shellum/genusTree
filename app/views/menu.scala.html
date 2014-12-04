@@ -104,7 +104,7 @@
     </head>
     <body>
         <div id='header-panel'>
-            <span class='header-text'>GenusTree Menu</span><img id='header-logo' src="@routes.Assets.at("images/tree.gif")"/>
+            <span class='header-text'>GenusTree Menu</span><img id='header-logo' src="@routes.Assets.at("images/tree.png")"/>
         </div>
         <div id='main-panel'>
             <div class="progress" style='display:none;'>
@@ -118,25 +118,25 @@
                 </div>
             </div>
             <div class="main-menu-item">
-                <div id="generationLink" class="link">Find Generation</div>
+                <div id="generationLink" class="link">Find Generation</div><img class='main-menu-image' src='@routes.Assets.at("images/MenuRelativeList.png")'>
                 <div id="generationForm">
                 @setupGeneration(token, personId)
                 </div>
             </div>
             <div class="main-menu-item">
-                <div id="nameCloudLink" class="link">Name Cloud</div>
+                <div id="nameCloudLink" class="link">Name Cloud</div><img class='main-menu-image' src='@routes.Assets.at("images/MenuNameCloud.png")'>
                 <div id="nameCloudForm">
                     @setupNameCloud(token, personId)
                 </div>
             </div>
             <div class="main-menu-item">
-                <div id="findDuplicatesLink" class="link">Find Duplicates</div>
+                <div id="findDuplicatesLink" class="link">Find Duplicates</div><img class='main-menu-image' src='@routes.Assets.at("images/MenuDuplicatesList.png")'>
                 <div id="findDuplicatesForm">
                     @setupFindDuplicates(token, personId)
                 </div>
             </div>
             <div class="main-menu-item">
-                <div id="mapAncestorsLink" class="link">Map Ancestors</div>
+                <div id="mapAncestorsLink" class="link">Map Ancestors</div><img class='main-menu-image' src='@routes.Assets.at("images/MenuMapAncestors.png")'>
                 <div id="mapAncestorsForm">
                     @setupMapAncestors(token, personId)
                 </div>
