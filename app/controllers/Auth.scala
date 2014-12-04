@@ -1,6 +1,6 @@
 package controllers
 
-import models.PersonWrites
+import models.{Person, PersonWrites}
 import models.PersonWrites.fullWrites
 import play.api.data.Forms._
 import play.api.data._
@@ -29,7 +29,9 @@ object Auth extends Controller {
     val generations = nameListForm.bindFromRequest.get.generations
 
     val allPeople = FamilySearch.getAllPeople(4, 1, pid, token).distinct
-    val json = Json.toJson(allPeople).toString()
+    val currentUser = getCurrentUserPerson(token)
+    val allPeopleAndCurrentUser = (currentUser :: allPeople).distinct
+    val json = Json.toJson(allPeopleAndCurrentUser).toString()
     Ok(json).as(TEXT)
   }
 
@@ -63,13 +65,18 @@ object Auth extends Controller {
         var token: String = (json \ "access_token").toString
         token = "Bearer " + token.replaceAll("\"", "")
 
-        val user = FamilySearch.getCurrentUser(token)
-        val j = Json.parse(user)
-        val jsarray = j \ "users"
-        val personId = (jsarray(0) \ "personId").toString().replace("\"", "")
-        val displayName = (jsarray(0) \ "displayName").toString().replace("\"", "")
-        Ok(views.html.loading(token, personId))
+        val user = getCurrentUserPerson(token)
+        Ok(views.html.loading(token, user.pid))
     }
+  }
+
+  def getCurrentUserPerson(token: String): Person = {
+    val user = FamilySearch.getCurrentUser(token)
+    val j = Json.parse(user)
+    val jsarray = j \ "users"
+    val personId = (jsarray(0) \ "personId").toString().replace("\"", "")
+    val displayName = (jsarray(0) \ "displayName").toString().replace("\"", "")
+    Person(personId, displayName)
   }
 
   def reprocessToken = Action { implicit request =>

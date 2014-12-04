@@ -90,9 +90,12 @@ object FamilySearch {
             val ancesteryNumber = item \ "display" \ "ascendancyNumber"
             var ancesteryNumberStr = ""
             if (!ancesteryNumber.toString().contains("JsUndefined")) ancesteryNumberStr = ancesteryNumber.toString().replaceAll("\"", "")
-            val descendancyNumber = item \ "display" \ "descendancyNumber"
+            val descendancyNumber = (item \ "display" \ "descendancyNumber").asOpt[String]
             var descendancyNumberStr = ""
-            if (descendancyNumber != JsUndefined) descendancyNumberStr = descendancyNumber.toString().replaceAll("\"", "")
+            descendancyNumber match {
+              case Some(x) => descendancyNumberStr = x.replaceAll ("\"", "")
+              case None =>
+            }
             val gender = (item \ "gender" \ "type").toString().replaceAll("\"", "").replace("http://gedcomx.org/", "")
             val link = "https://familysearch.org/ark:/61903/4:1:" + id
             val firstName = (item \ "names")(0)
