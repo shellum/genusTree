@@ -67,6 +67,9 @@
     right: 0px;
 }
 
+.main-menu-item + .tooltip > .tooltip-inner {background-color: rgb(26, 178, 97);}
+.main-menu-item + .tooltip > .tooltip-arrow {border-right-color: rgb(26, 178, 97);}
+
 .main-menu-item {
     position: relative;
     border: #4f5f2b 1px solid;
