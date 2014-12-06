@@ -4,6 +4,7 @@ GET         /reprocessToken              controllers.Auth.reprocessToken
 GET         /privacyPolicy               controllers.Auth.privacyPolicy
 POST        /menu                        controllers.Auth.menu
 POST        /getNameList                 controllers.Auth.getNameList
+POST        /getAnotherNameList          controllers.Auth.getAnotherNameList
 
 POST        /search                      controllers.SingleGeneration.search
 POST        /getCousins                  controllers.SingleGeneration.getCousins

@@ -3,6 +3,7 @@ package controllers
 import java.util.concurrent.TimeUnit
 
 import models.Person
+import org.apache.commons.codec.digest.DigestUtils
 import play.api.data.Forms._
 import play.api.data._
 import play.api.libs.json.{JsObject, Json}
@@ -53,7 +54,7 @@ object Maps extends Controller {
         //val detailedPerson = getDetailedPerson(p.pid, peopleDetails)
 
         if (p.place != null && p.place != "?" && !p.place.contains("JsUndefined")) {
-          val place = p.place.trim.replaceAll("  ", " ").replaceAll(",,", ",")
+          val place = DigestUtils.md5(p.place.trim.replaceAll("  ", " ").replaceAll(",,", ",")).toString
           val latlon = getLatLong(place, placeMap)
           placeMap = latlon._3
           if (latlon._1 != "" && latlon._2 != "") {

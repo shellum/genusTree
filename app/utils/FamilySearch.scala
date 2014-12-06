@@ -73,7 +73,6 @@ object FamilySearch {
         case "{\n  \"errors\" : [ {\n    \"code\" : 503,\n    \"label\" : \"Service Unavailable\",\n    \"message\" : \"Timeout waiting for connection to CIS.\"\n  } ]\n}" =>
         case "{\n  \"errors\" : [ {\n    \"code\" : 429\n  } ]\n}" => Event("throttled")
         case _ =>
-          println(body)
           var json = Json.parse("{}")
           try {json = Json.parse(body)} catch {
             case e: Throwable=>
@@ -168,22 +167,20 @@ object FamilySearch {
     allPeople
   }
 
-  def getAllPeople(ascendingGenerations: Int, descendingGenerations: Int, pid: String, token: String): List[Person] = {
+  def getAllAncestors(ascendingGenerations: Int, pid: String, token: String): List[Person] = {
     var allPeople: List[Person] = List[Person]()
     val ancestors: List[Person] = getAncestors(token, pid, ascendingGenerations, API_URL_ANCESTRY)
 
     allPeople = ancestors.distinct
+    allPeople.distinct
+  }
 
-    var ancestryNumberToPersonMap: Map[String, Person] = Map()
-    ancestors.foreach(p => {
-      ancestryNumberToPersonMap += p.ancestryNumber -> p
-    })
-
+  def getAllDescendants(descendingGenerations: Int, pids: List[String], token: String): List[Person] = {
+    var allPeople: List[Person] = List[Person]()
     var descendantFutures: List[Future[List[Person]]] = List()
-    allPeople.foreach(p => {
-    //  Thread.sleep(10)
+    pids.foreach(p => {
       descendantFutures = future {
-        getDescendants(token, p.pid, descendingGenerations)
+        getDescendants(token, p, descendingGenerations)
       } :: descendantFutures
     })
 

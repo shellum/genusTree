@@ -28,7 +28,18 @@ object Auth extends Controller {
     val pid = nameListForm.bindFromRequest.get.pid
     val generations = nameListForm.bindFromRequest.get.generations
 
-    val allPeople = FamilySearch.getAllPeople(4, 1, pid, token).distinct
+    val allPeople = FamilySearch.getAllAncestors(4, pid, token).distinct
+    val json = Json.toJson(allPeople).toString()
+    Ok(json).as(TEXT)
+  }
+
+  def getAnotherNameList() = Action { implicit reqest =>
+    val token = loadingForm.bindFromRequest.get.token
+    val pid = loadingForm.bindFromRequest.get.pid
+    val pids = loadingForm.bindFromRequest.get.pids
+    val pidList = pids.split(",").toList
+
+    val allPeople = FamilySearch.getAllDescendants(1, pidList, token).distinct
     val currentUser = getCurrentUserPerson(token)
     val allPeopleAndCurrentUser = (currentUser :: allPeople).distinct
     val json = Json.toJson(allPeopleAndCurrentUser).toString()
@@ -86,6 +97,14 @@ object Auth extends Controller {
     Ok(views.html.loading(token, personId))
   }
 
+  val loadingForm = Form(
+    mapping(
+      "token" -> text,
+      "pid" -> text,
+      "pids" -> text
+    )(Loader.apply)(Loader.unapply)
+  )
+
 
   val userForm = Form(
     mapping(
@@ -113,5 +132,6 @@ object Auth extends Controller {
 case class BaseForm(token: String, pid: String)
 
 case class Cousins(token: String, pid: String, nameList: String)
+case class Loader(token: String, pid: String, pids: String)
 
 case class NameListForm(token: String, pid: String, generations: Int)

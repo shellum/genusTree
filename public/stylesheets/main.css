@@ -20,15 +20,15 @@
 }
 
 .link {
-    color: rgb(26, 178, 97);
+    color: #28a301;
     text-decoration: none;
     cursor: pointer; cursor: hand;
     text-align: left;
     padding: 10px 10px 10px 10px;
 }
 
-.link :hover {
-    color: rgb(66, 218, 137);
+.link:hover {
+    color: #33cc33;
     text-decoration: underline;
     cursor: pointer; cursor: hand;
 }
@@ -62,20 +62,29 @@
 }
 
 .sidebar-name-list {
-    width:  300px;
-    position: absolute;
+    width:  280px;
+    padding: 0px;
     right: 0px;
 }
 
-.main-menu-item + .tooltip > .tooltip-inner {background-color: rgb(26, 178, 97);}
-.main-menu-item + .tooltip > .tooltip-arrow {border-right-color: rgb(26, 178, 97);}
+.main-menu-item + .tooltip > .tooltip-inner {background-color: #28a301;}
+.main-menu-item + .tooltip > .tooltip-arrow {border-right-color: #28a301;}
+
+.btn-success {
+    color: #fff;
+    width: 100%;
+    background-color:#28a301;
+    border-color: #398439;
+}
+.btn-success:hover{
+    background-color: #33cc33;
+    border-color: rgb(16, 168, 87);
+}
 
 .main-menu-item {
     position: relative;
     border: #4f5f2b 1px solid;
     width: 180px;
-    float:left;
-    clear:left;
 }
 
 .main-menu-image {
@@ -115,8 +124,6 @@
 #main-panel {
     margin: 0px auto auto auto;
     width: 1000px;
-
-    background: #DDEEDD;
     text-align:center;
 }
 

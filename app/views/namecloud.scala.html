@@ -1,10 +1,10 @@
 @(json: String, sortedPartToNamesMap: List[(String, List[Person])], font: String, colorScheme: ColorScheme, token: String)
  <script src="@routes.Assets.at("javascripts/nametree.js")"></script>
-            <canvas id="canvas" height="500px" width="550px" style="position:absolute;left:20px;"></canvas>
+            <canvas id="canvas" height="500px" width="550px" style="float:right;left:20px;"></canvas>
             <ul class="sidebar-name-list">
-                <li class="list-group-item"><h3>Name Frequency List</h3></li>
+                <li class="list-group-item left-list-item"><h3>Name Frequency List</h3></li>
                 @for((k,v) <- sortedPartToNamesMap) {
-                <li class="list-group-item">@k
+                <li class="list-group-item left-list-item">@k
                         @for((p) <- v) {
                         <br>&nbsp;&nbsp;<a href="@p.link" target="_blank">@p.name</a>
                         }
