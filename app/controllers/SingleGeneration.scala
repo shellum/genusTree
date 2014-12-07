@@ -8,7 +8,7 @@ import play.api.data.Form
 import play.api.data.Forms._
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
-import utils.FamilySearch
+import utils.{Event, FamilySearch}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
@@ -125,6 +125,8 @@ object SingleGeneration extends Controller {
     val token = userForm.bindFromRequest.get.token
     val pid = userForm.bindFromRequest.get.pid
     val nameList = userForm.bindFromRequest.get.nameList
+
+    Event("Generation")
 
     val allPeople = Json.parse(nameList).as[List[Person]]
 

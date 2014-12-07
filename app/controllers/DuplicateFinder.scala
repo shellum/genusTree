@@ -6,7 +6,7 @@ import controllers.Auth.{baseUserForm, userForm}
 import models.Person
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
-import utils.FamilySearch
+import utils.{Event, FamilySearch}
 import scala.concurrent.ExecutionContext.Implicits.global
 import models.PersonWrites.fullReads
 import scala.concurrent._
@@ -26,6 +26,8 @@ object DuplicateFinder extends Controller {
     val token = userForm.bindFromRequest.get.token
     val pid = userForm.bindFromRequest.get.pid
     val nameList = userForm.bindFromRequest.get.nameList
+
+    Event("Duplicates")
 
     val allPeople = Json.parse(nameList).as[List[Person]]
 

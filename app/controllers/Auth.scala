@@ -7,7 +7,7 @@ import play.api.data._
 import play.api.libs.json.Json
 import play.api.libs.ws.WS
 import play.api.mvc._
-import utils.FamilySearch
+import utils.{Event, FamilySearch}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
@@ -16,10 +16,12 @@ import scala.concurrent.duration.Duration
 object Auth extends Controller {
 
   def index = Action {
+    Event("Homepage")
     Ok(views.html.index(FamilySearch.FAMILYSEARCH_IDENT_URL))
   }
 
   def privacyPolicy = Action {
+    Event("PrivacyPolicy")
     Ok(views.html.privacy())
   }
 
@@ -38,6 +40,8 @@ object Auth extends Controller {
     val pid = loadingForm.bindFromRequest.get.pid
     val pids = loadingForm.bindFromRequest.get.pids
     val pidList = pids.split(",").toList
+
+    Event("LoadOther")
 
     val allPeople = FamilySearch.getAllDescendants(1, pidList, token).distinct
     val currentUser = getCurrentUserPerson(token)
@@ -68,6 +72,9 @@ object Auth extends Controller {
     }
 
     Await.result(future, Duration(190, java.util.concurrent.TimeUnit.SECONDS))
+
+    Event("Login")
+
     val json = Json.parse(ret)
 
     (json \ "access_token").asOpt[String] match {

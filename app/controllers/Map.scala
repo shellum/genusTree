@@ -9,7 +9,7 @@ import play.api.data._
 import play.api.libs.json.{JsObject, Json}
 import play.api.libs.ws.WS
 import play.api.mvc._
-import utils.{FamilySearch, Mongo, Timer}
+import utils.{Event, FamilySearch, Mongo, Timer}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
@@ -21,6 +21,8 @@ object Maps extends Controller {
     val token = userForm.bindFromRequest.get.token
     val pid = userForm.bindFromRequest.get.pid
     val nameList = userForm.bindFromRequest.get.nameList
+
+    Event("Map")
 
     val generations = 5
     var allPeople = Json.parse(nameList).as[List[Person]]

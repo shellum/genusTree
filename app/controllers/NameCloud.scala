@@ -7,7 +7,7 @@ import play.api.data.Form
 import play.api.data.Forms._
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
-import utils.FamilySearch
+import utils.{Event, FamilySearch}
 import models.PersonWrites.fullReads
 
 object NameCloud extends Controller {
@@ -20,6 +20,8 @@ object NameCloud extends Controller {
     val colorScheme = ColorScheme(nameCloudForm.bindFromRequest.get.colorScheme)
     val font = StringEscapeUtils.escapeHtml4(StringEscapeUtils.escapeEcmaScript(unsanitizedFont))
     val nameList = nameCloudForm.bindFromRequest.get.nameList
+
+    Event("NameCloud")
 
     val allPeople = Json.parse(nameList).as[List[Person]]
 
