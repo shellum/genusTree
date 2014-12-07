@@ -1,19 +1,89 @@
 @(json: String)
+<div>
         <script>
+            debugger;
             var map;
-            $(function () {
-            var myLatlng = new google.maps.LatLng(40, -111);
-            var mapOptions = {
-            zoom: 2,
-            center: myLatlng
-            }
-            map = new google.maps.Map(document.getElementById("map"), mapOptions);
-$('#map' ).css('height','700px');
-            $('#map' ).css('width','820px');
-                setTimeout(draw(),1);
-        });
-            function draw() {
             var json = @Html(json);
+
+            var cache = {};
+            var outstanding = 0;
+            var completed = 0;
+            function isFloat(n) {
+            return n === +n && n !== (n|0);
+            }
+
+            $(function () {
+                var myLatlng = new google.maps.LatLng(40, -111);
+                var mapOptions = {
+                    zoom: 2,
+                    center: myLatlng
+                }
+                map = new google.maps.Map(document.getElementById("map"), mapOptions);
+                $('#map' ).css('height','700px');
+                $('#map' ).css('width','820px');
+                var n=0;
+
+            json.forEach(function(path) {
+            path.forEach ( function ( person ) {
+            if ( ! isFloat ( person.lat ) ) {
+            outstanding ++ ;
+            }
+            } ) ;
+            });
+                var whits=0;
+                var chits=0;
+
+            json.forEach(function(path) {
+                    path.forEach(function(person) {
+                        var delayinc = 200;
+                        setTimeout ( function ( ) {
+                            if ( ! isFloat ( person.lat ) ) {
+
+                                var latlon = cache[ person.place ] ;
+                                 if ( latlon === undefined ) {
+
+                                    var jqxhr = $.get ( "http://maps.googleapis.com/maps/api/geocode/json?sensor=false&address=" + person.place, function ( data ) {
+                                        completed ++ ;
+                                        whits++;
+                                        //console.log("req ok: "+whits+ " "+ person.place);
+                                        person.lat = data.results[ 0 ].geometry.location.lat ;
+                                        person.lon = data.results[ 0 ].geometry.location.lng ;
+                                        cache[ person.place ] = { lat : person.lat, lon : person.lon } ;
+
+                                    } )
+
+                                    .fail ( function ( ) {
+                                        person.lat = "" ;
+                                        person.lon = "" ;
+                                        completed ++ ;
+                                    } ) ;
+                                 }
+                                else
+                                {
+                                    chits++;
+                                    //console.log("cache ok: "+ chits+" " + person.place);
+                                    person.lat = latlon.lat;
+                                    person.lon = latlon.lon;
+                                    completed++;
+                                    delayinc = 0;
+                                }
+                            }
+                        }, n ) ;
+                        n += delayinc; ;
+                        if (n>2000) n = 200;
+
+
+                    });
+            });
+                  setTimeout(check, 1000);
+        });
+            function check() {
+                if (outstanding != completed)
+                    setTimeout(check, 1000);
+                else
+                    draw();
+            }
+            function draw() {
             //     var colors=['#F9CDAD','#C8C8A9','#83AF9B','#556270','#C7F464','CornflowerBlue', 'Crimson', 'DarkOrange', 'DarkOrchid', 'DarkTurquoise', 'Fuchsia', 'Gold', 'HotPink', 'LightSeaGreen', 'SteelBlue'];
             var colors = [
             '#ba1389',
@@ -102,22 +172,28 @@ $('#map' ).css('height','700px');
 
 
             var flightPlanCoordinates = [];
+                var n=0;
             e.forEach(function (g) {
-            flightPlanCoordinates.push(new google.maps.LatLng(g.lat, g.lon));
+                // Try to get lat lon
+                    //what now? how to get lat/lons all in a list
+                    // do if for all lat lons before each flight plan???
+                if ( isFloat( g.lat) && isFloat( g.lon)) {
+                flightPlanCoordinates.push ( new google.maps.LatLng ( g.lat, g.lon ) ) ;
 
-            var myLatlng = new google.maps.LatLng(g.lat,g.lon);
-            var marker = new google.maps.Marker({
-            position: myLatlng,
-            map: map,
-            title:(g.name + " " + g.place)
+                var myLatlng = new google.maps.LatLng ( g.lat, g.lon ) ;
+                var marker = new google.maps.Marker ( {
+                position : myLatlng,
+                map : map,
+                title : ( g.name + " @@ " + g.place.split("%20").join(" ") )
 
-            });
-            marker.setMap(map);
-            google.maps.event.addListener(marker, 'click', function() {
+                } ) ;
+                marker.setMap ( map ) ;
+                google.maps.event.addListener ( marker, 'click', function ( ) {
 
-            window.open(g.link);
+                window.open ( g.link ) ;
 
-            });
+                } ) ;
+                }
             });
 
             var flightPath = new google.maps.Polyline({
@@ -137,3 +213,4 @@ $('#map' ).css('height','700px');
 
         <div id="map" ></div>
 
+</div>
