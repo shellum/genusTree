@@ -41,7 +41,7 @@
                                 var latlon = cache[ person.place ] ;
                                  if ( latlon === undefined ) {
 
-                                    var jqxhr = $.get ( "http://maps.googleapis.com/maps/api/geocode/json?sensor=false&address=" + person.place, function ( data ) {
+                                    var jqxhr = $.get ( "https://maps.googleapis.com/maps/api/geocode/json?sensor=false&address=" + person.place, function ( data ) {
                                         completed ++ ;
                                         whits++;
                                         //console.log("req ok: "+whits+ " "+ person.place);
