@@ -30,7 +30,7 @@ object Auth extends Controller {
     val pid = nameListForm.bindFromRequest.get.pid
     val generations = nameListForm.bindFromRequest.get.generations
 
-    val allPeople = FamilySearch.getAllAncestors(4, pid, token).distinct
+    val allPeople = FamilySearch.getAllAncestors(6, pid, token).distinct
     val json = Json.toJson(allPeople).toString()
     Ok(json).as(TEXT)
   }

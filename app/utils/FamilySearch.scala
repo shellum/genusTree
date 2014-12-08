@@ -79,55 +79,59 @@ object FamilySearch {
               json = Json.parse("{}");
           }
           val jsarray = json \ "persons"
-          ret = jsarray.as[List[JsObject]].foldLeft(List[Person]())((acc: List[Person], item: JsObject) => {
-            val id = (item \ "id").toString().replaceAll("\"", "")
-            val name = (item \ "display" \ "name")
-            val nameText = name match {
-              case x: JsUndefined => "Unknown";
-              case x => x.toString().replaceAll("\"", "").replace("\\", "");
-            }
-            val ancesteryNumber = item \ "display" \ "ascendancyNumber"
-            var ancesteryNumberStr = ""
-            if (!ancesteryNumber.toString().contains("JsUndefined")) ancesteryNumberStr = ancesteryNumber.toString().replaceAll("\"", "")
-            val descendancyNumber = (item \ "display" \ "descendancyNumber").asOpt[String]
-            var descendancyNumberStr = ""
-            descendancyNumber match {
-              case Some(x) => descendancyNumberStr = x.replaceAll ("\"", "")
-              case None =>
-            }
-            val gender = (item \ "gender" \ "type").toString().replaceAll("\"", "").replace("http://gedcomx.org/", "")
-            val link = "https://familysearch.org/ark:/61903/4:1:" + id
-            val firstName = (item \ "names")(0)
-            val firsts = (firstName \ "nameForms")(0)
-            val fir = firsts \ "parts"
-            val firstNamez = (fir(0) \ "value").toString().replaceAll("\"", "").replace("\\", "").split(" ")(0)
-            val lifespan = (item \ "display" \ "lifespan")
-            val lifespanText = lifespan match {
-              case x: JsUndefined => "Unknown";
-              case x => x.toString().replaceAll("\"", "").replace("\\", "");
-            }
-            val years = lifespanText.split("-")
-            var birthYear = "?"
-            var deathYear = "?"
-            if (years.length > 1) {
-              birthYear = parseLifeDate(years(0))
-              deathYear = parseLifeDate(years(1))
-            } else {
-              birthYear = "?"
-              deathYear = "Living"
-            }
-            val facts = (item \ "facts")
-            var place = "?"
-            facts.as[List[JsObject]].foreach(fact=> {
-              val possiblePlace = (fact \ "place" \ "original").toString().replaceAll("\"", "").replace("\\", "")
-              if (place == "?")
-                place = possiblePlace
-              // println(name+": "+place)
-            })
+          try {
+            ret = jsarray.as[List[JsObject]].foldLeft(List[Person]())((acc: List[Person], item: JsObject) => {
+              val id = (item \ "id").toString().replaceAll("\"", "")
+              val name = (item \ "display" \ "name")
+              val nameText = name match {
+                case x: JsUndefined => "Unknown";
+                case x => x.toString().replaceAll("\"", "").replace("\\", "");
+              }
+              val ancesteryNumber = item \ "display" \ "ascendancyNumber"
+              var ancesteryNumberStr = ""
+              if (!ancesteryNumber.toString().contains("JsUndefined")) ancesteryNumberStr = ancesteryNumber.toString().replaceAll("\"", "")
+              val descendancyNumber = (item \ "display" \ "descendancyNumber").asOpt[String]
+              var descendancyNumberStr = ""
+              descendancyNumber match {
+                case Some(x) => descendancyNumberStr = x.replaceAll("\"", "")
+                case None =>
+              }
+              val gender = (item \ "gender" \ "type").toString().replaceAll("\"", "").replace("http://gedcomx.org/", "")
+              val link = "https://familysearch.org/ark:/61903/4:1:" + id
+              val firstName = (item \ "names")(0)
+              val firsts = (firstName \ "nameForms")(0)
+              val fir = firsts \ "parts"
+              val firstNamez = (fir(0) \ "value").toString().replaceAll("\"", "").replace("\\", "").split(" ")(0)
+              val lifespan = (item \ "display" \ "lifespan")
+              val lifespanText = lifespan match {
+                case x: JsUndefined => "Unknown";
+                case x => x.toString().replaceAll("\"", "").replace("\\", "");
+              }
+              val years = lifespanText.split("-")
+              var birthYear = "?"
+              var deathYear = "?"
+              if (years.length > 1) {
+                birthYear = parseLifeDate(years(0))
+                deathYear = parseLifeDate(years(1))
+              } else {
+                birthYear = "?"
+                deathYear = "Living"
+              }
+              val facts = (item \ "facts")
+              var place = "?"
+              facts.as[List[JsObject]].foreach(fact => {
+                val possiblePlace = (fact \ "place" \ "original").toString().replaceAll("\"", "").replace("\\", "")
+                if (place == "?")
+                  place = possiblePlace
+                // println(name+": "+place)
+              })
 
-            val person = Person(id, nameText, gender, None, link = link, firstName = firstNamez, ancestryNumber = ancesteryNumberStr, descendancyNumber = descendancyNumberStr, birthYear = birthYear, deathYear = deathYear, place = place)
-            person :: acc
-          })
+              val person = Person(id, nameText, gender, None, link = link, firstName = firstNamez, ancestryNumber = ancesteryNumberStr, descendancyNumber = descendancyNumberStr, birthYear = birthYear, deathYear = deathYear, place = place)
+              person :: acc
+            })
+          } catch {
+            case e: Throwable => ;
+          }
       }
     }
     Await.result(future, Duration(190, java.util.concurrent.TimeUnit.SECONDS))
