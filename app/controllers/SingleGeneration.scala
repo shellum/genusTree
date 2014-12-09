@@ -96,10 +96,15 @@ object SingleGeneration extends Controller {
   }
 
   def getAuntsUncles() = Action { implicit request =>
-    val token = baseUserForm.bindFromRequest.get.token
-    val pid = baseUserForm.bindFromRequest.get.pid
+    val token = userForm.bindFromRequest.get.token
+    val pid = userForm.bindFromRequest.get.pid
+    val nameList = userForm.bindFromRequest.get.nameList
 
-    val treeTuple = getCousinTree(token, pid, null)
+    Event("Generation")
+
+    val allPeople = Json.parse(nameList).as[List[Person]]
+
+    val treeTuple = getCousinTree(token, pid, allPeople)
     val grandparentSet = treeTuple._1
 
     // Remove descendants of Aunts/Uncles unless they are the user in question

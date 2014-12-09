@@ -46,6 +46,7 @@
 
                 $('#generation-button').click(function () {
                     $("#generation-nameList" ).val(JSON.stringify(nameList));
+                    $('#generation-form' ).attr('action', $('#generation-action' ).val());
                     $('#generation-form').submit(function() {
                         return submitInPlaceForm(this, 4000);
                     });
