@@ -36,7 +36,7 @@ object SingleGeneration extends Controller {
     //Get Aunts and Uncles
     var auntUncleFutures = List[Future[List[Person]]]()
     grandparents.foreach((item) => {
-      auntUncleFutures = future {
+      auntUncleFutures = Future {
         FamilySearch.getChildren(token, pid, item)
       } :: auntUncleFutures
     })
@@ -49,7 +49,7 @@ object SingleGeneration extends Controller {
     // Get cousins
     var cousinFutures = List[Future[List[Person]]]()
     grandparentSet.getDescendants().foreach((item) => {
-      cousinFutures = future {
+      cousinFutures = Future {
         FamilySearch.getChildren(token, pid, item)
       } :: cousinFutures
     })

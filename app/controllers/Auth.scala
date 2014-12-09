@@ -12,6 +12,7 @@ import utils.{Event, FamilySearch}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import scala.concurrent.duration.Duration
+import play.api.Play.current
 
 object Auth extends Controller {
 

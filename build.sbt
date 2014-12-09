@@ -1,4 +1,4 @@
-name := "famit"
+name := "genustree"
 
 version := "1.0-SNAPSHOT"
 
@@ -8,7 +8,9 @@ libraryDependencies ++= Seq(
   cache,
   "org.apache.commons" % "commons-lang3" % "3.3.2",
   "org.mongodb" %% "casbah" % "2.7.4",
-  "commons-codec" % "commons-codec" % "1.4"
-)     
+  "commons-codec" % "commons-codec" % "1.4",
+  "com.typesafe.play" %% "play-ws" % "2.3.7"
+)
 
-play.Project.playScalaSettings
+lazy val root = (project in file(".")).enablePlugins(PlayScala)
+scalaVersion := "2.11.4"

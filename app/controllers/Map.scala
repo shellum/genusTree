@@ -137,7 +137,7 @@ object Maps extends Controller {
       s.toInt
       true
     } catch {
-      case e => false
+      case e: Throwable => false
     }
   }
 

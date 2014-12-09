@@ -6,6 +6,7 @@ import models.Person
 import play.api.Play
 import play.api.libs.json.{JsNull, JsObject, JsUndefined, Json}
 import play.api.libs.ws.WS
+import play.api.Play.current
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
@@ -153,7 +154,7 @@ object FamilySearch {
       }
       var descendantFutures: List[Future[List[Person]]] = List()
       nextGenToFollow.foreach(p => {
-        descendantFutures = future {
+        descendantFutures = Future {
           getAncestors(token, p.pid, generationsToGet, API_URL_DESCENDANCY)
         } :: descendantFutures
       })
@@ -183,7 +184,7 @@ object FamilySearch {
     var allPeople: List[Person] = List[Person]()
     var descendantFutures: List[Future[List[Person]]] = List()
     pids.foreach(p => {
-      descendantFutures = future {
+      descendantFutures = Future {
         getDescendants(token, p, descendingGenerations)
       } :: descendantFutures
     })
