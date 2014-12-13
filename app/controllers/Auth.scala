@@ -2,12 +2,13 @@ package controllers
 
 import models.{Person, PersonWrites}
 import models.PersonWrites.fullWrites
+import play.api.Play
 import play.api.data.Forms._
 import play.api.data._
 import play.api.libs.json.Json
 import play.api.libs.ws.WS
 import play.api.mvc._
-import utils.{Event, FamilySearch}
+import utils.{Timer, Event, FamilySearch}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
@@ -15,6 +16,10 @@ import scala.concurrent.duration.Duration
 import play.api.Play.current
 
 object Auth extends Controller {
+
+  val EMAIL_KEY: String = Play.current.configuration.getString("email.key").get
+  val EMAIL_FROM: String = Play.current.configuration.getString("email.from").get
+  val EMAIL_DEST: String = Play.current.configuration.getString("email.dest").get
 
   def index = Action {
     Event("Homepage")
@@ -34,6 +39,42 @@ object Auth extends Controller {
     val allPeople = FamilySearch.getAllAncestors(6, pid, token).distinct
     val json = Json.toJson(allPeople).toString()
     Ok(json).as(TEXT)
+  }
+
+  def feedback() = Action { implicit request =>
+    val from = feedbackForm.bindFromRequest.get.from
+    val body = feedbackForm.bindFromRequest.get.body
+
+    sendFeedback(from, body)
+    Ok
+  }
+
+  def sendFeedback(from: String, body: String) = {
+      val timer = Timer("sendFeedback")
+      val future = WS.url("https://mandrillapp.com/api/1.0/messages/send.json")
+        .post(
+          """
+            {
+                "key": """" + EMAIL_KEY + """",
+                "message": {
+                    "text": """" + body + """",
+                    "subject": "Genustree Feedback: """ +from + """",
+                    "from_email": """" + EMAIL_FROM + """",
+                    "from_name": "genustree-feedback",
+                    "to": [
+                        {
+                            "email": """" + EMAIL_DEST + """",
+                            "name": "Recipient Name",
+                            "type": "to"
+                        }
+                    ]
+                }
+            }
+          """).map { response =>
+        timer.logTime()
+      }
+
+      Await.result(future, Duration(190, java.util.concurrent.TimeUnit.SECONDS))
   }
 
   def getAnotherNameList() = Action { implicit reqest =>
@@ -135,10 +176,17 @@ object Auth extends Controller {
     )(NameListForm.apply)(NameListForm.unapply)
   )
 
+  val feedbackForm = Form(
+    mapping(
+      "from" -> text,
+      "body" -> text
+    )(FeedbackForm.apply)(FeedbackForm.unapply)
+  )
+
 }
 
 case class BaseForm(token: String, pid: String)
-
+case class FeedbackForm(from: String, body: String)
 case class Cousins(token: String, pid: String, nameList: String)
 case class Loader(token: String, pid: String, pids: String)
 

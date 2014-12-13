@@ -18,4 +18,6 @@ POST        /findDuplicateDetails        controllers.DuplicateFinder.findDuplica
 
 POST        /map                         controllers.Maps.index
 
+POST        /feedback                    controllers.Auth.feedback
+
 GET         /assets/*file                controllers.Assets.at(path="/public", file)

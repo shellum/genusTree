@@ -67,6 +67,35 @@
     right: 0px;
 }
 
+#feedback-window {
+    position:absolute;
+    width:400px;
+    height:200px;
+    margin:auto;
+    background:white;
+    border:3px #28a301 solid;
+    top:100px;
+    right:0;
+    left:0
+}
+
+#feedback-window-titlebar {
+    background:#28a301;
+    color:white;
+    padding:3px
+}
+
+#feedback-window-message {
+    width:100%;
+    height:50px
+}
+
+#feedback-window-close-box {
+    position:absolute;
+    right:3px;
+    cursor: pointer; cursor: hand;
+}
+
 .main-menu-item + .tooltip > .tooltip-inner {background-color: #28a301;}
 .main-menu-item + .tooltip > .tooltip-arrow {border-right-color: #28a301;}
 
@@ -110,7 +139,7 @@
     left: 10px;
 }
 
-#logout-link {
+#footer-b-link {
     position: absolute;
     right: 10px;
 }

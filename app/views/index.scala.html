@@ -14,7 +14,25 @@
         $(function() {
             $('#sign-in-button').click(function() {
                 $('#sign-in-form').submit();
+            });
+            $('#submit-feedback-form' ).click(function() {
+                $('#feedback-window' ).hide('fast');
+                if($('#feedback-window-message').val().length > 5)
+                $.ajax({
+                    data: $('#feedback-form').serialize(),
+                    type: $('#feedback-form').attr('method'),
+                    url: $('#feedback-form').attr('action'),
+                    success: function(response) {
+                    }
                 });
+            });
+            $('#feedback-window-close-box' ).click(function() {
+                $('#feedback-window' ).hide('fast');
+            });
+            $('#feedback-window' ).hide();
+            $('#footer-b-link' ).click(function() {
+                $('#feedback-window' ).show('fast');
+            })
         });
     </script>
     <body>
@@ -31,7 +49,21 @@
                     <h4 class='subtitle'>visualize your ancestors in context</h4>
                 </div>
                 <div id='footer-panel'>
-                    <div id='footer-text'><a class='link no-padding' id='privacy-policy-link' href="/privacyPolicy">Privacy Policy</a><a class='link no-padding' id='logout-link' href="mailto:genustree@@gmail.com">Contact/Feedback</a></div>
+                    <div id='footer-text'><a class='link no-padding' id='privacy-policy-link' href="/privacyPolicy">Privacy Policy</a><a class='link no-padding' id='footer-b-link'>Contact/Feedback</a></div>
+                </div>
+            </form>
+        </div>
+        <div id="feedback-window">
+            <form id='feedback-form' action="/feedback" method="post">
+                <div id="feedback-window-titlebar"><span id="feedback-window-close-box" >&#10006;</span>Feedback and Questions</div>
+                <div class="form-element field-width">
+                Your email (optional): <input type="text" name="from">
+                </div>
+                    <div class="form-element field-width">
+                Your questions or comments:<br><textarea name="body" id="feedback-window-message"></textarea>
+                </div>
+                    <div class="form-element field-width">
+                    <input id='submit-feedback-form' value='Send' class='btn btn-success' type="button">
                 </div>
             </form>
         </div>
