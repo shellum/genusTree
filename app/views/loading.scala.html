@@ -11,10 +11,10 @@
         <script>
             function isInt(n) { return parseInt(n) === n };
             $(function () {
-            setTimeout($('.progress-bar' ).attr("aria-valuenow",10).css("width",10+'%'),1000);
+            setTimeout($('.progress-bar' ).attr("aria-valuenow",20).css("width",20+'%'),1000);
 
             $.post( "/getNameList", $( "#get-name-list-form" ).serialize()).done(function(data) {
-                    $('.progress-bar' ).attr("aria-valuenow",40).css("width",40+'%');
+                    $('.progress-bar' ).attr("aria-valuenow",70).css("width",70+'%');
                     var pids = new Array();
                     JSON.parse(data).forEach(function (person) {
                         if(parseInt(person.ancestryNumber) < 32)
