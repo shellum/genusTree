@@ -9,7 +9,7 @@ import play.api.data._
 import play.api.libs.json.{JsObject, Json}
 import play.api.libs.ws.WS
 import play.api.mvc._
-import utils.{Event, FamilySearch, Mongo, Timer}
+import utils.{Event, FamilySearch, Timer}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
@@ -88,31 +88,6 @@ object Maps extends Controller {
 
   def getEscapedString(str: String): String = {
     str.replaceAll("<", "").replaceAll(">", "").replaceAll(" ", "%20")
-  }
-
-  def getLatLong(address: String, hashedAddress: String, map: Map[String, (String, String)]): (String, String, Map[String, (String, String)], Boolean) = {
-    val timer = Timer("getGeocode " + address)
-    var lat = ""
-    var lon = ""
-    var newMap = map
-    var foundAddress = false
-    map.get(address) match {
-
-      case Some(x) =>
-        (x._1, x._2, map, foundAddress)
-      case None =>
-        val latlon = Mongo.getLatLon(hashedAddress)
-        if (latlon == null) {
-          lat = address
-          lon = address
-        } else {
-          foundAddress = true
-          lat = latlon._1
-          lon = latlon._2
-          newMap += address ->(lat, lon)
-        }
-        (lat, lon, newMap, foundAddress)
-    }
   }
 
   def getDetailedPerson(pid: String, personList: List[Person]): Person = {
