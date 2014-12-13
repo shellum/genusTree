@@ -3,19 +3,9 @@
 <html>
     <head>
         <title>GenusTree</title>
-        <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
-        <link rel="stylesheet" href="@routes.Assets.at("stylesheets/bootstrap.min.css")">
-        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
-        <link rel="stylesheet" media="screen and (max-width: 600px)" href="@routes.Assets.at("stylesheets/main-small.css")">
         <script>                var nameList=@Html(json);
         </script>
-        <script src="@routes.Assets.at("javascripts/jquery-1.11.1.min.js")" type="text/javascript"></script>
-        <script src="@routes.Assets.at("javascripts/bootstrap.min.js")" type="text/javascript"></script>
-        <script src="@routes.Assets.at("javascripts/typeahead.min.js")" type="text/javascript"></script>
-        <script src="@routes.Assets.at("javascripts/forms.js")"></script>
-        <script src="@routes.Assets.at("javascripts/duplicates.js")"></script>
-        <script src="@routes.Assets.at("javascripts/d3.min.js")"></script>
-        <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+        @includes()
         <script>
     function submitInPlaceForm(what, timeToEnableButton) {
         $("#page").removeAttr("style");
