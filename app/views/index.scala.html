@@ -16,7 +16,7 @@
                 $('#sign-in-form').submit();
             });
             $('#submit-feedback-form' ).click(function() {
-                $('#feedback-window' ).hide('fast');
+                closeFeedbackWindow();
                 if($('#feedback-window-message').val().length > 5)
                 $.ajax({
                     data: $('#feedback-form').serialize(),
@@ -27,12 +27,24 @@
                 });
             });
             $('#feedback-window-close-box' ).click(function() {
-                $('#feedback-window' ).hide('fast');
+                closeFeedbackWindow();
             });
             $('#feedback-window' ).hide();
             $('#footer-b-link' ).click(function() {
+                greyOutScreen();
                 $('#feedback-window' ).show('fast');
-            })
+            });
+
+            function closeFeedbackWindow() {
+                $('#feedback-window' ).hide('fast');
+                $('#grey-screen').css('display', 'none')
+            }
+
+            function greyOutScreen(){
+                $('#grey-screen').css({'display': 'block', opacity: 0.7, 'width':$(document).width(),'height':$(document).height()});
+                $('body').css({'overflow':'hidden'});
+            }
+
         });
     </script>
     <body>
@@ -67,6 +79,7 @@
                 </div>
             </form>
         </div>
+        <div id="grey-screen"></div>
     </body>
     @analytics()
 </html>

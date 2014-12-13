@@ -76,7 +76,8 @@
     border:3px #28a301 solid;
     top:100px;
     right:0;
-    left:0
+    left:0;
+    z-index : 20;
 }
 
 #feedback-window-titlebar {
@@ -94,6 +95,13 @@
     position:absolute;
     right:3px;
     cursor: pointer; cursor: hand;
+}
+
+#grey-screen {
+    position: absolute;
+    left: 0;
+    top: 0;
+    background: #000;
 }
 
 .main-menu-item + .tooltip > .tooltip-inner {background-color: #28a301;}
