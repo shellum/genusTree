@@ -102,7 +102,27 @@
     left: 0;
     top: 0;
     background: #000;
+    z-index: 5;
 }
+
+#cycler {
+    position: relative;
+    text-align: left;
+    height: 500px;
+    width: 1000px;
+    overflow: hidden;
+    border: 1px solid #d7d7d7;
+}
+
+#cycler img {
+    position:absolute;
+    z-index:1
+}
+
+#cycler img.active {
+    z-index:3
+}
+
 
 .main-menu-item + .tooltip > .tooltip-inner {background-color: #28a301;}
 .main-menu-item + .tooltip > .tooltip-arrow {border-right-color: #28a301;}

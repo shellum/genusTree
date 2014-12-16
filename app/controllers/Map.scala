@@ -58,12 +58,7 @@ object Maps extends Controller {
         if (p.place != null && p.place != "?" && !p.place.contains("JsUndefined")) {
           val sanitizedPlace = getEscapedString(p.place.trim.replaceAll("  ", " ").replaceAll(",,", ","))
           val hashedPlace = DigestUtils.md5(sanitizedPlace).toString
-        //  val latlon = getLatLong(sanitizedPlace, hashedPlace, placeMap)
-        //  placeMap = latlon._3
-        //  if (latlon._1 != "" && latlon._2 != "") {
-           // println(p.place + " vs " + place + " : " + latlon._1 + "," + latlon._2)
             json = json + "{name:\"" + p.name + "\",place:\"" + sanitizedPlace + "\", hash:\""+hashedPlace+"\", lat:\"" + "" + "\", lon:\"" + "" + "\", foundAddress:"+"false"+", link:\"" + p.link + "\"},"
-         // }
         }
       })
       json = json.substring(0, json.length - 1)

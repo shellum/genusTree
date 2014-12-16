@@ -63,7 +63,6 @@ object FamilySearch {
     if (url.contains("descendancy"))
       what = "getDescendants"
     val timer = Timer(what)
-    //println("Start ancestor query...")
     val future = WS.url(FAMILYSEARCH_SERVER_URL + url + "?person=" + selfPid + "&generations=" + generations + "&personDetails=")
       .withHeaders(("Accept", "application/x-fs-v1+json"), ("Authorization", token))
       .get().map { response =>
@@ -124,7 +123,6 @@ object FamilySearch {
                 val possiblePlace = (fact \ "place" \ "original").toString().replaceAll("\"", "").replace("\\", "")
                 if (place == "?")
                   place = possiblePlace
-                // println(name+": "+place)
               })
 
               val person = Person(id, nameText, gender, None, link = link, firstName = firstNamez, ancestryNumber = ancesteryNumberStr, descendancyNumber = descendancyNumberStr, birthYear = birthYear, deathYear = deathYear, place = place)
