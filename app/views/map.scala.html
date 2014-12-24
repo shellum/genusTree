@@ -45,8 +45,12 @@
                                         completed ++ ;
                                         whits++;
                                         //console.log("req ok: "+whits+ " "+ person.place);
+                                        try {
                                         person.lat = data.results[ 0 ].geometry.location.lat ;
                                         person.lon = data.results[ 0 ].geometry.location.lng ;
+                                        } catch(e) {
+                                            console.log(e);
+                                        }
                                         cache[ person.place ] = { lat : person.lat, lon : person.lon } ;
 
                                     } )
@@ -77,10 +81,10 @@
                   setTimeout(check, 1000);
         });
             function check() {
-                if (outstanding != completed)
-                    setTimeout(check, 1000);
+                if (outstanding > completed)
+                    setTimeout ( check, 1000 ) ;
                 else
-                    draw();
+                    draw ( ) ;
             }
             function draw() {
             //     var colors=['#F9CDAD','#C8C8A9','#83AF9B','#556270','#C7F464','CornflowerBlue', 'Crimson', 'DarkOrange', 'DarkOrchid', 'DarkTurquoise', 'Fuchsia', 'Gold', 'HotPink', 'LightSeaGreen', 'SteelBlue'];
