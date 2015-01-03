@@ -64,30 +64,34 @@ object NameCloud extends Controller {
         maxSize = p.count
     })
 
+    var maxScale = 50.0/maxSize
+
     sortedSimpleList.foreach(p => {
       nameCount = nameCount + 1
-      var nameSize = ((p.count * (65 - ((10 - generations) * 3))) / maxSize)
+      var nameSize = (p.count * 100 / maxSize)*maxScale
+
       //val smallestSize = 13 - (sortedSimpleList.size / 100)
       //if (nameSize < smallestSize) nameSize = smallestSize
-      if (nameSize < 20 && nameSize > 10) nameSize -= 5
-      else if (nameSize < 10) nameSize = 10
-      if (nameCount < 150)
+   //   if (nameSize < 20 && nameSize > 10) nameSize -= 3
+   //   else if (nameSize < 10) nameSize = 10
+   //   if (nameCount < 150)
         json = json + "{name:\"" + p.name + "\",size:" + nameSize + "},"
     })
 
-    if (nameCount < 100)
+
       do {
         sortedSimpleList.foreach(p => {
-          nameCount = nameCount + 1
-          json = json + "{name:\"" + p.name + "\",size:10},"
+          nameCount = nameCount + 1;
+          if (nameCount < 130)
+            json = json + "{name:\"" + p.name + "\",size:10},"
         })
-      } while (nameCount < 150)
+      } while (nameCount < 130)
 
-    var i = 30
-    if (sortedSimpleList.size - 1 < 30) i = sortedSimpleList.size - 1
-    (1 to i).foreach(i => {
-      json = json + "{name:\"" + sortedSimpleList(i).name + "\",size:10},"
-    })
+//    var i = 30
+//    if (sortedSimpleList.size - 1 < 30) i = sortedSimpleList.size - 1
+//    (1 to i).foreach(i => {
+//      json = json + "{name:\"" + sortedSimpleList(i).name + "\",size:10},"
+//    })
 
     json = json.substring(0, json.length - 1)
     json = json + "]"

@@ -3,6 +3,7 @@ var canvas;
 var taken = [];
 function drawTree(words, font, foregroundColors, backgroundColor, colorFun) {
 
+    taken=[];
     canvas = document.getElementById('canvas');
     context = canvas.getContext('2d');
 
@@ -98,8 +99,9 @@ function drawTree(words, font, foregroundColors, backgroundColor, colorFun) {
     for (u = 0; u < 1; u++) {
         console.log(u);
         words.forEach(function (w) {
-            console.log(g + '/' + words.length);
+            console.log(g + '/' + words.length + ":" + w.size);
             g++;
+            if (g < 100)
             setTimeout(function () {placeText(w.name.toUpperCase(), w.size,font, foregroundColors, backgroundColor, colorFun);},200);
         });
     }
@@ -112,11 +114,11 @@ function placeText(text, sz,font, foregroundColors, backgroundColor, colorFun) {
     var x = 100;
     var y = 100;
     var canput = false;
-    var xbounds = 5;
-    var ybounds = 5;
+    var xbounds = 7;
+    var ybounds = 7;
     var xdelta = 0;
     var ydelta = 0;
-    var inc = 5;
+    var inc = 7;
     var centerCoord = 200;
     do {
 
