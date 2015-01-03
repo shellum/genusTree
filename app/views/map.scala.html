@@ -185,12 +185,26 @@
 
                 var myLatlng = new google.maps.LatLng ( g.lat, g.lon ) ;
                 var marker = new google.maps.Marker ( {
-                position : myLatlng,
-                map : map,
-                title : ( g.name + " @@ " + g.place.split("%20").join(" ") )
+                    position : myLatlng,
+                    map : map,
+                    icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|28a301'
 
                 } ) ;
                 marker.setMap ( map ) ;
+
+
+                var point = new google.maps.LatLng(40, -20);
+                var data = ( g.name + " @@ " + g.place.split("%20").join(" ") );
+                var infowindow = new google.maps.InfoWindow({
+                    content: data
+                });
+                google.maps.event.addListener(marker, 'mouseover', function() {
+                    infowindow.open(map,marker);
+                });
+                google.maps.event.addListener(marker, 'mouseout', function() {
+                    infowindow.close();
+                });
+
                 google.maps.event.addListener ( marker, 'click', function ( ) {
 
                 window.open ( g.link ) ;
